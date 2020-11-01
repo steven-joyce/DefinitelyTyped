@@ -42,6 +42,8 @@ let numAccessor: (this: SVGPathElement, d: d3Chord.ChordSubgroup, ...args: any[]
 
 let chordLayout: d3Chord.ChordLayout;
 chordLayout = d3Chord.chord();
+chordLayout = d3Chord.chordDirected();
+chordLayout = d3Chord.chordTranspose();
 
 // Configure ChordLayout generator =====================================
 
@@ -146,6 +148,30 @@ svgRibbon = svgRibbon.radius(function(d) {
 
 numAccessor = svgRibbon.radius();
 
+// sourceRadius() -----------------------------------------------------------
+
+canvasRibbon = canvasRibbon.sourceRadius(30);
+
+svgRibbon = svgRibbon.sourceRadius(function(d) {
+    console.log('SVGPathElement createSVGPathSegCurvetoCubicAbs method:', this.createSVGPathSegCurvetoCubicAbs); // this type SVGPathElement
+    console.log('Subgroup startAngle', d.startAngle); // datum is of type Chord
+    return 30;
+});
+
+numAccessor = svgRibbon.sourceRadius();
+
+// targetRadius() -----------------------------------------------------------
+
+canvasRibbon = canvasRibbon.targetRadius(30);
+
+svgRibbon = svgRibbon.targetRadius(function(d) {
+    console.log('SVGPathElement createSVGPathSegCurvetoCubicAbs method:', this.createSVGPathSegCurvetoCubicAbs); // this type SVGPathElement
+    console.log('Subgroup startAngle', d.startAngle); // datum is of type Chord
+    return 30;
+});
+
+numAccessor = svgRibbon.targetRadius();
+
 // startAngle() ---------------------------------------------------------
 
 canvasRibbon = canvasRibbon.startAngle(0);
@@ -168,6 +194,17 @@ svgRibbon = svgRibbon.endAngle(function(d) {
 
 numAccessor = svgRibbon.endAngle();
 
+// padAngle() -----------------------------------------------------------
+
+canvasRibbon = canvasRibbon.padAngle(Math.PI);
+
+svgRibbon = svgRibbon.padAngle(function(d) {
+    console.log('SVGPathElement createSVGPathSegCurvetoCubicAbs method:', this.createSVGPathSegCurvetoCubicAbs); // this type SVGPathElement
+    return d.endAngle; // datum is of type ChordSubgroup
+});
+
+numAccessor = svgRibbon.padAngle();
+
 // Use RibbonGenerator =================================================
 
 // use canvas
@@ -180,7 +217,7 @@ canvasRibbon(ribbon); // render ribbon for first chord
 
 // The below fails explicitly, as standard ChordSubgroup objects for source and target are missing "radius" property assumed in default
 // radius accessor. Given the internals of d3 this would lead to a "NaN" radius. So using static typing to raise this to
-// awareness seems appropriate. The alternative, is to create RibbonGenerator using the generics to explictly set the types and
+// awareness seems appropriate. The alternative, is to create RibbonGenerator using the generics to explicitly set the types and
 // then set the radius. Or, one could map a radius property into the Chords returned by the ChordLayout.
 
 // canvasRibbon(chords[0]); // fails, see above
@@ -193,5 +230,5 @@ ribbonPaths = select<SVGGElement, any>('g')
     .datum(chords)
     .selectAll()
     .data(chords => chords)
-    .enter().append<SVGPathElement>('path')
+    .enter().append('path')
     .attr('d', svgRibbon);

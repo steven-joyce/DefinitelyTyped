@@ -32,7 +32,7 @@ export class Revwalk {
     /**
      * Set the sort order for the revwalk. This function takes variable arguments like revwalk.sorting(NodeGit.RevWalk.Topological, NodeGit.RevWalk.Reverse).
      */
-    sorting(sort: number): void;
+    sorting(...sort: number[]): void;
     fastWalk(maxCount: number): Promise<any>;
     fileHistoryWalk(filePath: string, maxCount: number): Promise<any[]>;
     /**
@@ -42,6 +42,6 @@ export class Revwalk {
     /**
      * Walk the history grabbing commits until the checkFn called with the current commit returns false.
      */
-    getCommitsUntil(checkFn: Function): Promise<any[]>;
+    getCommitsUntil(checkFn: Function): Promise<Commit[]>;
     getCommits(count: number): Promise<Commit[]>;
 }

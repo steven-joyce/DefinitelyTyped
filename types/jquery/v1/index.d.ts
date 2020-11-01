@@ -592,6 +592,7 @@ interface BaseJQueryEventObject extends Event {
     pageY: number;
     /**
      * For key or mouse events, this property indicates the specific key or button that was pressed.
+     * @deprecated Use `key` for KeyEvents or `button` for MouseEvents instead.
      * @see {@link https://api.jquery.com/event.which/}
      */
     which: number;
@@ -622,9 +623,12 @@ interface JQueryMouseEventObject extends JQueryInputEventObject {
 }
 
 interface JQueryKeyEventObject extends JQueryInputEventObject {
-    char: any;
+    /** @deprecated */
+    char: string;
+    /** @deprecated */
     charCode: number;
-    key: any;
+    key: string;
+    /** @deprecated */
     keyCode: number;
 }
 
@@ -824,7 +828,7 @@ interface JQueryStatic {
      * @see {@link https://api.jquery.com/jQuery.ajaxTransport/}
      */
     ajaxTransport(dataType: string, handler: (opts: any, originalOpts: JQueryAjaxSettings, jqXHR: JQueryXHR) => any): void;
-    
+
     ajaxSettings: JQueryAjaxSettings;
 
      /**
@@ -2773,20 +2777,20 @@ interface JQuery {
      * Attach an event handler function for one or more events to the selected elements.
      *
      * @param events One or more space-separated event types and optional namespaces, such as "click" or "keydown.myPlugin".
-     * @param data Data to be passed to the handler in event.data when an event is triggered.
-     * @param handler A function to execute when the event is triggered. The value false is also allowed as a shorthand for a function that simply does return false.
-     * @see {@link https://api.jquery.com/on/#on-events-selector-data-handler}
-    */
-    on(events: string, data : any, handler: (eventObject: JQueryEventObject, ...args: any[]) => any): JQuery;
-    /**
-     * Attach an event handler function for one or more events to the selected elements.
-     *
-     * @param events One or more space-separated event types and optional namespaces, such as "click" or "keydown.myPlugin".
      * @param selector A selector string to filter the descendants of the selected elements that trigger the event. If the selector is null or omitted, the event is always triggered when it reaches the selected element.
      * @param handler A function to execute when the event is triggered. The value false is also allowed as a shorthand for a function that simply does return false.
      * @see {@link https://api.jquery.com/on/#on-events-selector-data-handler}
      */
     on(events: string, selector: string, handler: (eventObject: JQueryEventObject, ...eventData: any[]) => any): JQuery;
+    /**
+     * Attach an event handler function for one or more events to the selected elements.
+     *
+     * @param events One or more space-separated event types and optional namespaces, such as "click" or "keydown.myPlugin".
+     * @param data Data to be passed to the handler in event.data when an event is triggered.
+     * @param handler A function to execute when the event is triggered. The value false is also allowed as a shorthand for a function that simply does return false.
+     * @see {@link https://api.jquery.com/on/#on-events-selector-data-handler}
+    */
+    on(events: string, data : any, handler: (eventObject: JQueryEventObject, ...args: any[]) => any): JQuery;
     /**
      * Attach an event handler function for one or more events to the selected elements.
      *

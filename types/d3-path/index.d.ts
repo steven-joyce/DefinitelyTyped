@@ -1,9 +1,12 @@
-// Type definitions for D3JS d3-path module 1.0
-// Project: https://github.com/d3/d3-path/
-// Definitions by: Tom Wanzek <https://github.com/tomwanzek>, Alex Ford <https://github.com/gustavderdrache>, Boris Yankov <https://github.com/borisyankov>
+// Type definitions for D3JS d3-path module 2.0
+// Project: https://github.com/d3/d3-path/, https://d3js.org/d3-path
+// Definitions by: Tom Wanzek <https://github.com/tomwanzek>
+//                 Alex Ford <https://github.com/gustavderdrache>
+//                 Boris Yankov <https://github.com/borisyankov>
+//                 Nathan Bierema <https://github.com/Methuselah96>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
-// Last module patch version validated against: 1.0.5
+// Last module patch version validated against: 2.0.0
 
 /**
  * A D3 path serializer implementing CanvasPathMethods
@@ -95,7 +98,7 @@ export interface Path {
     rect(x: number, y: number, w: number, h: number): void;
 
     /**
-     * Returns the string representation of this path according to SVG’s path data specficiation.
+     * Returns the string representation of this path according to SVG’s path data specification.
      */
     toString(): string;
 }

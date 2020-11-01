@@ -6,40 +6,67 @@ const app = new Koa();
 const config: webpack.Configuration = {};
 const compiler = webpack(config);
 
-// Using the middleware
-
-const middleware = koaWebpack({
-    compiler,
-    config,
-    dev: {
-        lazy: true,
-        watchOptions: {
-            aggregateTimeout: 300,
-            poll: true,
-        },
-        publicPath: '/assets/',
-        index: 'index.html',
-        headers: {
-            'X-Custom-Header': 'yes'
-        },
-        stats: {
-            colors: true,
-        },
-        reporter: null,
-        serverSideRender: false
-    },
-    hot: {
-        log: console.log.bind(console),
-        path: '/__what',
-        heartbeat: 2000
-    }
+app.use(ctx => {
+    // $ExpectType MemoryFileSystem | undefined
+    ctx.state.fs;
+    ctx.body = ctx.state.fs!.createReadStream('file.js');
 });
 
-app.use(middleware);
+app.use(ctx => {
+    // $ExpectType Stats
+    ctx.state.stats;
+    ctx.body = ctx.state.stats.toJson();
+});
 
-// Accessing the underlying middleware
+// Using the middleware
+koaWebpack({
+    compiler,
+    config,
+    // Reference: https://github.com/webpack/webpack-dev-middleware#options
+    devMiddleware: {
+        headers: { 'X-Custom-Header': 'yes' },
+        index: 'index.html',
+        lazy: false,
+        logger: undefined,
+        logLevel: 'info',
+        // logTime: false,
+        // mimeTypes: null,
+        publicPath: '/assets/',
+        reporter: null,
+        serverSideRender: false,
+        stats: { context: process.cwd() },
+        watchOptions: { aggregateTimeout: 200 },
+        // writeToDisk: false
+    },
+    // Reference: https://github.com/webpack-contrib/webpack-hot-client#api
+    hotClient: {
+        allEntries: false,
+        autoConfigure: true,
+        host: 'localhost',
+        hmr: true,
+        https: false,
+        logLevel: 'info',
+        logTime: false,
+        port: 0,
+        reload: true,
+        server: undefined,
+        stats: { context: process.cwd() },
+    },
+}).then(middleware => {
+    app.use(middleware);
 
-middleware.dev.close();
-middleware.dev.invalidate();
-middleware.dev.waitUntilValid();
-middleware.hot.publish(null);
+    // Accessing the underlying middleware
+    middleware.devMiddleware.close();
+    middleware.devMiddleware.invalidate();
+    middleware.devMiddleware.waitUntilValid();
+    middleware.devMiddleware.getFilenameFromUrl('/public/index.html');
+    middleware.devMiddleware.fileSystem;
+    middleware.hotClient.close();
+    middleware.hotClient.options;
+    middleware.hotClient.server;
+
+    // close the middleware
+    middleware.close(() => {
+        console.log('closed');
+    });
+});

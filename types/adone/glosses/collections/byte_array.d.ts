@@ -104,6 +104,13 @@ declare namespace adone.collection {
         readUInt16BE(offset?: number): number;
 
         /**
+         * Reads a 24bit unsigned be integer
+         *
+         * @param offset Offset to read from
+         */
+        readUInt24BE(offset?: number): number;
+
+        /**
          * Reads a 32bit signed le integer
          *
          * @param offset Offset to read from
@@ -259,6 +266,13 @@ declare namespace adone.collection {
          * @param offset Offset to write at
          */
         writeUInt16BE(value: number, offset?: number): this;
+
+        /**
+         * Writes a 24bit unsigned be integer
+         *
+         * @param offset Offset to write at
+         */
+        writeUInt24BE(value: number, offset?: number): this;
 
         /**
          * Writes a 32bit signed le integer
@@ -666,7 +680,7 @@ declare namespace adone.collection {
          * Resizes this ByteArray to be backed by a buffer of at least the given capacity.
          * Will do nothing if already that large or larger.
          *
-         * @param capacity	Capacity required
+         * @param capacity    Capacity required
          */
         resize(capacity: number): this;
 

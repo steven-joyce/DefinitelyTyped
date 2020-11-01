@@ -1,12 +1,17 @@
+import * as React from 'react';
+import * as Popper from 'popper.js';
 import { CSSModule } from '../index';
 
 export interface DropdownMenuProps extends React.HTMLAttributes<HTMLElement> {
-  tag?: React.ReactType;
-  right?: boolean;
-  className?: string;
-  cssModule?: CSSModule;
-  flip?: boolean;
+    [key: string]: any;
+    tag?: React.ElementType;
+    right?: boolean;
+    cssModule?: CSSModule;
+    flip?: boolean;
+    modifiers?: Popper.Modifiers;
+    persist?: boolean;
+    positionFixed?: boolean;
 }
 
-declare const DropdownMenu: React.StatelessComponent<DropdownMenuProps>;
+declare class DropdownMenu<T = {[key: string]: any}> extends React.Component<DropdownMenuProps> {}
 export default DropdownMenu;

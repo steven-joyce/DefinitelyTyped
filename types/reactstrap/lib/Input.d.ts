@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { CSSModule } from '../index';
 
 export type InputType =
@@ -28,17 +29,18 @@ export type InputType =
   | 'color';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  type?: InputType;
-  bsSize?: 'lg' | 'sm';
-  state?: string;
-  valid?: boolean;
-  tag?: React.ReactType;
-  innerRef?: string | ((instance: HTMLInputElement) => any);
-  plaintext?: boolean;
-  addon?: boolean;
-  className?: string;
-  cssModule?: CSSModule;
+    [key: string]: any;
+    type?: InputType;
+    bsSize?: 'lg' | 'sm';
+    state?: string;
+    valid?: boolean;
+    invalid?: boolean;
+    tag?: React.ElementType;
+    innerRef?: React.Ref<HTMLInputElement>;
+    plaintext?: boolean;
+    addon?: boolean;
+    cssModule?: CSSModule;
 }
 
-declare const Input: React.StatelessComponent<InputProps>;
+declare class Input<T> extends React.Component<InputProps> {}
 export default Input;

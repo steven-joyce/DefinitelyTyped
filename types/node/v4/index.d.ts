@@ -1,8 +1,9 @@
-// Type definitions for Node.js 4.x
+// Type definitions for Node.js 4.9
 // Project: http://nodejs.org/
-// Definitions by: Microsoft TypeScript <http://typescriptlang.org>
-//                 DefinitelyTyped <https://github.com/DefinitelyTyped/DefinitelyTyped>
+// Definitions by: Microsoft TypeScript <https://github.com/Microsoft>
+//                 DefinitelyTyped <https://github.com/DefinitelyTyped>
 //                 Sebastian Silbermann <https://github.com/eps1lon>
+//                 Sander Koenders <https://github.com/Archcry>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
 /************************************************
@@ -110,7 +111,7 @@ declare var SlowBuffer: {
     prototype: Buffer;
     isBuffer(obj: any): boolean;
     byteLength(string: string, encoding?: string): number;
-    concat(list: Buffer[], totalLength?: number): Buffer;
+    concat(list: ReadonlyArray<Buffer>, totalLength?: number): Buffer;
 };
 
 
@@ -165,10 +166,6 @@ declare var Buffer: {
     new (buffer: Buffer): Buffer;
     prototype: Buffer;
     /**
-     * Allocates a new Buffer using an {array} of octets.
-     */
-    from(array: any[]): Buffer;
-    /**
      * When passed a reference to the .buffer property of a TypedArray instance,
      * the newly created Buffer will share the same allocated memory as the TypedArray.
      * The optional {byteOffset} and {length} arguments specify a memory range
@@ -178,9 +175,10 @@ declare var Buffer: {
      */
     from(arrayBuffer: ArrayBuffer, byteOffset?: number, length?:number): Buffer;
     /**
-     * Copies the passed {buffer} data onto a new Buffer instance.
+     * Creates a new Buffer using the passed {data}
+     * @param data data to create a new Buffer
      */
-    from(buffer: Buffer): Buffer;
+    from(data: ReadonlyArray<any> | string | Buffer | ArrayBuffer /*| TypedArray*/): Buffer;
     /**
      * Creates a new Buffer containing the given JavaScript string {str}.
      * If provided, the {encoding} parameter identifies the character encoding.
@@ -219,7 +217,7 @@ declare var Buffer: {
      * @param totalLength Total length of the buffers when concatenated.
      *   If totalLength is not provided, it is read from the buffers in the list. However, this adds an additional loop to the function, so it is faster to provide the length explicitly.
      */
-    concat(list: Buffer[], totalLength?: number): Buffer;
+    concat(list: ReadonlyArray<Buffer>, totalLength?: number): Buffer;
     /**
      * The same as buf1.compare(buf2).
      */
@@ -391,6 +389,7 @@ declare namespace NodeJS {
         remove(emitter: Events): void;
         bind(cb: (err: Error, data: any) => any): any;
         intercept(cb: (data: any) => any): any;
+        /** @deprecated since v0.11.7 - recover from failed I/O actions explicitly via error event handlers set on the domain instead. */
         dispose(): void;
 
         addListener(event: string, listener: Function): this;
@@ -410,6 +409,10 @@ declare namespace NodeJS {
         isTTY?: true;
     }
 
+    export interface ProcessEnv {
+        [key: string]: string | undefined;
+    }
+
     export interface Process extends EventEmitter {
         stdout: Socket;
         stderr: Socket;
@@ -420,7 +423,8 @@ declare namespace NodeJS {
         abort(): void;
         chdir(directory: string): void;
         cwd(): string;
-        env: any;
+        debugPort: number;
+        env: ProcessEnv;
         exit(code?: number): void;
         exitCode: number;
         getgid(): number;
@@ -476,7 +480,7 @@ declare namespace NodeJS {
         nextTick(callback: Function): void;
         umask(mask?: number): number;
         uptime(): number;
-        hrtime(time?:number[]): number[];
+        hrtime(time?:ReadonlyArray<number>): number[];
         domain: Domain;
 
         // Worker
@@ -669,14 +673,14 @@ declare module "http" {
     // incoming headers will never contain number
     export interface IncomingHttpHeaders {
         'accept'?: string;
-        'access-control-allow-origin'?: string;
-        'access-control-allow-credentials'?: string;
-        'access-control-expose-headers'?: string;
-        'access-control-max-age'?: string;
-        'access-control-allow-methods'?: string;
-        'access-control-allow-headers'?: string;
         'accept-patch'?: string;
         'accept-ranges'?: string;
+        'access-control-allow-credentials'?: string;
+        'access-control-allow-headers'?: string;
+        'access-control-allow-methods'?: string;
+        'access-control-allow-origin'?: string;
+        'access-control-expose-headers'?: string;
+        'access-control-max-age'?: string;
         'age'?: string;
         'allow'?: string;
         'alt-svc'?: string;
@@ -700,10 +704,11 @@ declare module "http" {
         'retry-after'?: string;
         'set-cookie'?: string[];
         'strict-transport-security'?: string;
+        'tk'?: string;
         'trailer'?: string;
         'transfer-encoding'?: string;
-        'tk'?: string;
         'upgrade'?: string;
+        'user-agent'?: string;
         'vary'?: string;
         'via'?: string;
         'warning'?: string;
@@ -759,7 +764,7 @@ declare module "http" {
         statusCode: number;
         statusMessage: string;
         headersSent: boolean;
-        setHeader(name: string, value: string | string[]): void;
+        setHeader(name: string, value: string | ReadonlyArray<string>): void;
         sendDate: boolean;
         getHeader(name: string): string;
         removeHeader(name: string): void;
@@ -781,13 +786,14 @@ declare module "http" {
         write(str: string, encoding?: string, cb?: Function): boolean;
         write(str: string, encoding?: string, fd?: string): boolean;
 
+        readonly path: string;
         write(chunk: any, encoding?: string): void;
         abort(): void;
         setTimeout(timeout: number, callback?: Function): void;
         setNoDelay(noDelay?: boolean): void;
         setSocketKeepAlive(enable?: boolean, initialDelay?: number): void;
 
-        setHeader(name: string, value: string | string[]): void;
+        setHeader(name: string, value: string | ReadonlyArray<string>): void;
         getHeader(name: string): string;
         removeHeader(name: string): void;
         addTrailers(headers: OutgoingHttpHeaders): void;
@@ -851,6 +857,7 @@ declare module "http" {
     }
 
     export class Agent {
+        maxFreeSockets: number;
         maxSockets: number;
         sockets: any;
         requests: any;
@@ -1081,7 +1088,9 @@ declare module "https" {
         secureProtocol?: string;
     }
 
-    export interface Agent extends http.Agent { }
+    export interface Agent extends http.Agent {
+        options?: AgentOptions;
+    }
 
     export interface AgentOptions extends http.AgentOptions {
         pfx?: any;
@@ -1113,7 +1122,7 @@ declare module "punycode" {
     export var ucs2: ucs2;
     interface ucs2 {
         decode(string: string): number[];
-        encode(codePoints: number[]): string;
+        encode(codePoints: ReadonlyArray<number>): string;
     }
     export var version: any;
 }
@@ -1222,7 +1231,7 @@ declare module "child_process" {
         stdin:  stream.Writable;
         stdout: stream.Readable;
         stderr: stream.Readable;
-        stdio: [stream.Writable, stream.Readable, stream.Readable];
+        stdio: StdioStreams;
         killed: boolean;
         pid: number;
         kill(signal?: string): void;
@@ -1230,6 +1239,12 @@ declare module "child_process" {
         connected: boolean;
         disconnect(): void;
         unref(): void;
+    }
+
+    export interface StdioStreams extends ReadonlyArray<stream.Readable|stream.Writable> {
+        0: stream.Writable; // stdin
+        1: stream.Readable; // stdout
+        2: stream.Readable; // stderr
     }
 
     export interface SpawnOptions {
@@ -1241,7 +1256,7 @@ declare module "child_process" {
         gid?: number;
         shell?: boolean | string;
     }
-    export function spawn(command: string, args?: string[], options?: SpawnOptions): ChildProcess;
+    export function spawn(command: string, args?: ReadonlyArray<string>, options?: SpawnOptions): ChildProcess;
 
     export interface ExecOptions {
         cwd?: string;
@@ -1285,11 +1300,11 @@ declare module "child_process" {
     // usage. child_process.execFile("file.sh", {encoding: null as string}, (err, stdout, stderr) => {});
     export function execFile(file: string, options?: ExecFileOptionsWithBufferEncoding, callback?: (error: Error, stdout: Buffer, stderr: Buffer) =>void ): ChildProcess;
     export function execFile(file: string, options?: ExecFileOptions, callback?: (error: Error, stdout: string, stderr: string) =>void ): ChildProcess;
-    export function execFile(file: string, args?: string[], callback?: (error: Error, stdout: string, stderr: string) =>void ): ChildProcess;
-    export function execFile(file: string, args?: string[], options?: ExecFileOptionsWithStringEncoding, callback?: (error: Error, stdout: string, stderr: string) =>void ): ChildProcess;
+    export function execFile(file: string, args?: ReadonlyArray<string>, callback?: (error: Error, stdout: string, stderr: string) =>void ): ChildProcess;
+    export function execFile(file: string, args?: ReadonlyArray<string>, options?: ExecFileOptionsWithStringEncoding, callback?: (error: Error, stdout: string, stderr: string) =>void ): ChildProcess;
     // usage. child_process.execFile("file.sh", ["foo"], {encoding: null as string}, (err, stdout, stderr) => {});
-    export function execFile(file: string, args?: string[], options?: ExecFileOptionsWithBufferEncoding, callback?: (error: Error, stdout: Buffer, stderr: Buffer) =>void ): ChildProcess;
-    export function execFile(file: string, args?: string[], options?: ExecFileOptions, callback?: (error: Error, stdout: string, stderr: string) =>void ): ChildProcess;
+    export function execFile(file: string, args?: ReadonlyArray<string>, options?: ExecFileOptionsWithBufferEncoding, callback?: (error: Error, stdout: Buffer, stderr: Buffer) =>void ): ChildProcess;
+    export function execFile(file: string, args?: ReadonlyArray<string>, options?: ExecFileOptions, callback?: (error: Error, stdout: string, stderr: string) =>void ): ChildProcess;
 
     export interface ForkOptions {
         cwd?: string;
@@ -1300,7 +1315,7 @@ declare module "child_process" {
         uid?: number;
         gid?: number;
     }
-    export function fork(modulePath: string, args?: string[], options?: ForkOptions): ChildProcess;
+    export function fork(modulePath: string, args?: ReadonlyArray<string>, options?: ForkOptions): ChildProcess;
 
     export interface SpawnSyncOptions {
         cwd?: string;
@@ -1334,9 +1349,9 @@ declare module "child_process" {
     export function spawnSync(command: string, options?: SpawnSyncOptionsWithStringEncoding): SpawnSyncReturns<string>;
     export function spawnSync(command: string, options?: SpawnSyncOptionsWithBufferEncoding): SpawnSyncReturns<Buffer>;
     export function spawnSync(command: string, options?: SpawnSyncOptions): SpawnSyncReturns<Buffer>;
-    export function spawnSync(command: string, args?: string[], options?: SpawnSyncOptionsWithStringEncoding): SpawnSyncReturns<string>;
-    export function spawnSync(command: string, args?: string[], options?: SpawnSyncOptionsWithBufferEncoding): SpawnSyncReturns<Buffer>;
-    export function spawnSync(command: string, args?: string[], options?: SpawnSyncOptions): SpawnSyncReturns<Buffer>;
+    export function spawnSync(command: string, args?: ReadonlyArray<string>, options?: SpawnSyncOptionsWithStringEncoding): SpawnSyncReturns<string>;
+    export function spawnSync(command: string, args?: ReadonlyArray<string>, options?: SpawnSyncOptionsWithBufferEncoding): SpawnSyncReturns<Buffer>;
+    export function spawnSync(command: string, args?: ReadonlyArray<string>, options?: SpawnSyncOptions): SpawnSyncReturns<Buffer>;
 
     export interface ExecSyncOptions {
         cwd?: string;
@@ -1384,9 +1399,9 @@ declare module "child_process" {
     export function execFileSync(command: string, options?: ExecFileSyncOptionsWithStringEncoding): string;
     export function execFileSync(command: string, options?: ExecFileSyncOptionsWithBufferEncoding): Buffer;
     export function execFileSync(command: string, options?: ExecFileSyncOptions): Buffer;
-    export function execFileSync(command: string, args?: string[], options?: ExecFileSyncOptionsWithStringEncoding): string;
-    export function execFileSync(command: string, args?: string[], options?: ExecFileSyncOptionsWithBufferEncoding): Buffer;
-    export function execFileSync(command: string, args?: string[], options?: ExecFileSyncOptions): Buffer;
+    export function execFileSync(command: string, args?: ReadonlyArray<string>, options?: ExecFileSyncOptionsWithStringEncoding): string;
+    export function execFileSync(command: string, args?: ReadonlyArray<string>, options?: ExecFileSyncOptionsWithBufferEncoding): Buffer;
+    export function execFileSync(command: string, args?: ReadonlyArray<string>, options?: ExecFileSyncOptions): Buffer;
 }
 
 declare module "url" {
@@ -1445,6 +1460,8 @@ declare module "dns" {
     export function lookup(hostname: string, options: LookupOptions, callback: (err: NodeJS.ErrnoException, address: string | LookupAddress[], family: number) => void): void;
     export function lookup(hostname: string, callback: (err: NodeJS.ErrnoException, address: string, family: number) => void): void;
 
+    export function lookupService(address: string, port: number, callback: (err: NodeJS.ErrnoException, hostname: string, service: string) => void): void;
+
     export interface MxRecord {
         priority: number;
         exchange: string;
@@ -1500,7 +1517,7 @@ declare module "dns" {
     export function resolveTxt(hostname: string, callback: (err: NodeJS.ErrnoException, addresses: string[][]) => void): void;
 
     export function reverse(ip: string, callback: (err: NodeJS.ErrnoException, hostnames: string[]) => void): void;
-    export function setServers(servers: string[]): void;
+    export function setServers(servers: ReadonlyArray<string>): void;
 
     //Error codes
     export var NODATA: string;
@@ -2040,7 +2057,7 @@ declare module "path" {
     /**
      * The right-most parameter is considered {to}.  Other parameters are considered an array of {from}.
      *
-     * Starting from leftmost {from} paramter, resolves {to} to an absolute path.
+     * Starting from leftmost {from} parameter, resolves {to} to an absolute path.
      *
      * If {to} isn't already absolute, {from} arguments are prepended in right to left order, until an absolute path is found. If after using all {from} paths still no absolute path is found, the current working directory is used as well. The resulting path is normalized, and trailing slashes are removed unless the path gets resolved to the root directory.
      *
@@ -2247,7 +2264,9 @@ declare module "crypto" {
         crl: string | string[];
         ciphers: string;
     }
+    /** @deprecated since v0.11.13 - use tls.SecureContext instead. */
     export interface Credentials { context?: any; }
+    /** @deprecated since v0.11.13 - use tls.createSecureContext instead. */
     export function createCredentials(details: CredentialDetails): Credentials;
     export function createHash(algorithm: string): Hash;
     export function createHmac(algorithm: string, key: string): Hmac;
@@ -2366,8 +2385,8 @@ declare module "stream" {
         highWaterMark?: number;
         decodeStrings?: boolean;
         objectMode?: boolean;
-        write?: (chunk: string | Buffer, encoding: string, callback: Function) => any;
-        writev?: (chunks: { chunk: string | Buffer, encoding: string }[], callback: Function) => any;
+        write?: (chunk: any, encoding: string, callback: Function) => any;
+        writev?: (chunks: { chunk: any, encoding: string }[], callback: Function) => any;
     }
 
     export class Writable extends Stream implements NodeJS.WritableStream {
@@ -2432,7 +2451,7 @@ declare module "util" {
 }
 
 declare module "assert" {
-    function internal (value: any, message?: string): void;
+    function internal(value: any, message?: string): void;
     namespace internal {
         export class AssertionError implements Error {
             name: string;
@@ -2442,30 +2461,27 @@ declare module "assert" {
             operator: string;
             generatedMessage: boolean;
 
-            constructor(options?: {message?: string; actual?: any; expected?: any;
-                                  operator?: string; stackStartFunction?: Function});
+            constructor(options?: {
+                message?: string; actual?: any; expected?: any;
+                operator?: string; stackStartFn?: Function
+            });
         }
 
-        export function fail(actual: any, expected: any, message?: string, operator?: string): void;
+        export function fail(actual: any, expected: any, message?: string, operator?: string): never;
         export function ok(value: any, message?: string): void;
         export function equal(actual: any, expected: any, message?: string): void;
         export function notEqual(actual: any, expected: any, message?: string): void;
         export function deepEqual(actual: any, expected: any, message?: string): void;
-        export function notDeepEqual(acutal: any, expected: any, message?: string): void;
+        export function notDeepEqual(actual: any, expected: any, message?: string): void;
         export function strictEqual(actual: any, expected: any, message?: string): void;
         export function notStrictEqual(actual: any, expected: any, message?: string): void;
         export function deepStrictEqual(actual: any, expected: any, message?: string): void;
         export function notDeepStrictEqual(actual: any, expected: any, message?: string): void;
 
         export function throws(block: Function, message?: string): void;
-        export function throws(block: Function, error: Function, message?: string): void;
-        export function throws(block: Function, error: RegExp, message?: string): void;
-        export function throws(block: Function, error: (err: any) => boolean, message?: string): void;
-
+        export function throws(block: Function, error: RegExp | Function, message?: string): void;
         export function doesNotThrow(block: Function, message?: string): void;
-        export function doesNotThrow(block: Function, error: Function, message?: string): void;
-        export function doesNotThrow(block: Function, error: RegExp, message?: string): void;
-        export function doesNotThrow(block: Function, error: (err: any) => boolean, message?: string): void;
+        export function doesNotThrow(block: Function, error: RegExp | Function, message?: string): void;
 
         export function ifError(value: any): void;
     }
@@ -2498,6 +2514,7 @@ declare module "domain" {
         remove(emitter: events.EventEmitter): void;
         bind(cb: (err: Error, data: any) => any): any;
         intercept(cb: (data: any) => any): any;
+        /** @deprecated since v0.11.7 - recover from failed I/O actions explicitly via error event handlers set on the domain instead. */
         dispose(): void;
     }
 

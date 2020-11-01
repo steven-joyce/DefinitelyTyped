@@ -4,29 +4,29 @@
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
 declare namespace PEG {
-	function parse(input:string):any;
+    function parse(input:string):any;
 
-	interface Location {
-		line: number;
-		column: number;
-		offset: number;
-	}
+    interface Location {
+        line: number;
+        column: number;
+        offset: number;
+    }
 
-	interface LocationRange {
-		start: Location,
-		end: Location
-	}
+    interface LocationRange {
+        start: Location,
+        end: Location
+    }
 
-	class SyntaxError {
-		line: number;
-		column: number;
-		offset: number;
-		location: LocationRange;
-		expected:any[];
-		found:any;
-		name:string;
-		message:string;
-	}
+    class SyntaxError {
+        line: number;
+        column: number;
+        offset: number;
+        location: LocationRange;
+        expected:any[];
+        found:any;
+        name:string;
+        message:string;
+    }
 }
 
 export type Location = PEG.Location;
@@ -51,8 +51,9 @@ export type GrammarError = PegjsError;
 export var GrammarError: any;
 
 export interface ParserOptions {
-    startRule: string;
-    tracer: any;
+    startRule?: string;
+    tracer?: any;
+    [key: string]: any;
 }
 
 export interface Parser {

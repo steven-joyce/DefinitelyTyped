@@ -1,28 +1,35 @@
+import * as React from 'react';
 import { CSSModule } from '../index';
 
-export interface UncontrolledProps extends React.HTMLAttributes<HTMLElement> {
-  isOpen?: boolean;
-  toggle?: () => void;
-  className?: string;
-  cssModule?: CSSModule;
-  nav?: boolean;
-  inNavbar?: boolean;
-}
-export interface UncontrolledDropdownProps extends UncontrolledProps {
-  /* intentionally blank */
-}
+export type Direction =
+  | "up"
+  | "down"
+  | "left"
+  | "right";
 
-export interface Props extends UncontrolledProps {
+export interface DropdownProps extends React.HTMLAttributes<HTMLElement> {
+  [key: string]: any;
+  a11y?: boolean;
   disabled?: boolean;
-  dropup?: boolean;
+  direction?: Direction;
   group?: boolean;
-  size?: string;
-  tag?: React.ReactType;
+  isOpen?: boolean;
+  nav?: boolean;
+  active?: boolean;
   addonType?: boolean | 'prepend' | 'append';
-}
-export interface DropdownProps extends Props {
-  /* intentionally blank */
+  size?: string;
+  tag?: React.ElementType;
+  toggle?: React.KeyboardEventHandler<any> | React.MouseEventHandler<any>;
+  cssModule?: CSSModule;
+  inNavbar?: boolean;
+  setActiveFromChild?: boolean;
 }
 
-declare const Dropdown: React.StatelessComponent<DropdownProps>;
+export interface UncontrolledDropdownProps extends DropdownProps {
+  defaultOpen?: boolean;
+  onToggle?: (event: React.KeyboardEvent | React.MouseEvent, isOpen: boolean) => void;
+}
+
+declare class Dropdown<T = {[key: string]: any}> extends React.Component<DropdownProps> {}
+
 export default Dropdown;

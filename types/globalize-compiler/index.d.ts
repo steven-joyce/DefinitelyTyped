@@ -1,10 +1,10 @@
 // Type definitions for globalize-compiler v0.2.0
-// Project: https://github.com/jquery-support/globalize-compiler
+// Project: https://github.com/globalizejs/globalize-compiler
 // Definitions by: Ian Clanton-Thuon <https://github.com/iclanton>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
-/// <reference types="globalize" />
 import * as ESTree from "estree";
+import globalize = require("globalize");
 
 interface CompileTemplateOptions {
   /**
@@ -35,14 +35,14 @@ interface ExtractFunction {
    *
    * @returns an Array with the formatters and parsers created using the passed Globalize.
    */
-  (globalize: GlobalizeStatic): FormatterOrParserFunction[];
+  (globalize: Globalize.Static): FormatterOrParserFunction[];
 }
 
 interface CompileExtractsAttributes extends CompileOptions {
   /**
    * an Array of extracts obtained by @see{GlobalizeCompilerStatic.extract}
    */
-  extracts: ExtractFunction;
+  extracts: ExtractFunction | ExtractFunction[];
 
   /**
    * a locale to be used as Globalize.locale(defaultLocale) when generating the extracted formatters and parsers.

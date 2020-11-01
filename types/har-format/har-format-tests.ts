@@ -48,6 +48,34 @@ const testCookie: harFormat.Cookie = {
     secure: true
 };
 
+const textPostData: harFormat.PostData = {
+    mimeType: "text/plain",
+    text: "some-text"
+};
+
+const paramsPostData: harFormat.PostData = {
+    mimeType: "multipart/form-data",
+    params: [{
+        name: "some-param",
+        value: "val"
+    }]
+};
+
+// $ExpectError
+const missingPostData: harFormat.PostData = {
+    mimeType: "text/plain"
+};
+
+// $ExpectError
+const tooMuchPostData: harFormat.PostData = {
+    mimeType: "multipart/form-data",
+    params: [{
+        name: "some-param",
+        value: "val"
+    }],
+    text: "asd"
+};
+
 const testContent: harFormat.Content = {
     size: 26915,
     mimeType: "text/html",
@@ -84,9 +112,24 @@ const testEntry: harFormat.Entry = {
     response: testResponse,
     cache: {},
     timings: testTimings,
+    _gzip_total: null,
+    _server_rtt: null,
     serverIPAddress: "192.30.253.113",
     connection: "26487",
     pageref: "page_1"
+};
+
+// Examples from http://www.softwareishard.com/blog/har-12-spec/#cache
+const testCacheNoInformation: harFormat.Cache = {
+};
+
+const testNoCacheAfter: harFormat.Cache = {
+    afterRequest: null
+};
+
+const testCacheNotCached: harFormat.Cache = {
+    beforeRequest: null,
+    afterRequest: null
 };
 
 const testLog: harFormat.Log = {

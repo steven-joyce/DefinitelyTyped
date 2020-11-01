@@ -164,7 +164,12 @@ declare namespace Xrm {
      */
     interface OrganizationSettings {
         /**
+         * Returns a lookup object containing the ID, name, and entity type of the base currency for the current organization.
+         */
+        baseCurrency: LookupValue;
+        /**
          * Returns the ID of the base currency for the current organization.
+         * @deprecated Deprecated in v9.1; use {@link Xrm.OrganizationSettings.baseCurrency globalContext.organizationSettings.baseCurrency} instead to display name along with the ID.
          */
         baseCurrencyId: string;
 
@@ -215,29 +220,29 @@ declare namespace Xrm {
      * Interface for UserSettings.dateFormattingInfo response
      */
     interface DateFormattingInfo {
-        amDesignator: string;
-        abbreviatedDayNames: string[];
-        abbreviatedMonthGenitiveNames: string[];
-        abbreviatedMonthNames: string[];
-        calendarWeekRule: number;
-        calendar: Calendar;
-        dateSeparator: string;
-        dayNames: string[];
-        firstDayOfWeek: number;
-        fullDateTimePattern: string;
-        longDatePattern: string;
-        longTimePattern: string;
-        monthDayPattern: string;
-        monthGenitiveNames: string[];
-        monthNames: string[];
-        pmDesignator: string;
-        shortDatePattern: string;
-        shortTimePattern: string;
-        shortestDayNames: string[];
-        sortableDateTimePattern: string;
-        timeSeparator: string;
-        universalSortableDateTimePattern: string;
-        yearMonthPattern: string;
+        AmDesignator: string;
+        AbbreviatedDayNames: string[];
+        AbbreviatedMonthGenitiveNames: string[];
+        AbbreviatedMonthNames: string[];
+        CalendarWeekRule: number;
+        Calendar: Calendar;
+        DateSeparator: string;
+        DayNames: string[];
+        FirstDayOfWeek: number;
+        FullDateTimePattern: string;
+        LongDatePattern: string;
+        LongTimePattern: string;
+        MonthDayPattern: string;
+        MonthGenitiveNames: string[];
+        MonthNames: string[];
+        PmDesignator: string;
+        ShortDatePattern: string;
+        ShortTimePattern: string;
+        ShortestDayNames: string[];
+        SortableDateTimePattern: string;
+        TimeSeparator: string;
+        UniversalSortableDateTimePattern: string;
+        YearMonthPattern: string;
     }
 
     /**
@@ -247,7 +252,7 @@ declare namespace Xrm {
         /**
          * Returns the date formatting information for the current user.
          */
-        dateFormattingInfo(): DateFormattingInfo;
+        dateFormattingInfo: DateFormattingInfo;
         /**
          * Returns the ID of the default dashboard for the current user.
          */
@@ -269,15 +274,26 @@ declare namespace Xrm {
          */
         languageId: number;
         /**
+         * Returns a collection of lookup objects containing the GUID and display name of each of the security role or teams that the user is associated with.
+         */
+        roles: Collection.ItemCollection<LookupValue>;
+        /**
          * Returns an array of strings that represent the GUID values of each of the security role privilege that the user is associated with or any teams that the user is associated with.
          */
         securityRolePrivileges: string[];
         /**
          * Returns an array of strings that represent the GUID values of each of the security role that the user is associated with or any teams that the user is associated with.
+         * @deprecated Deprecated in v9.1; use {@link Xrm.UserSettings.roles globalContext.userSettings.roles} instead to display names of security roles or teams along with the ID.
+         * @see {@link https://docs.microsoft.com/en-us/dynamics365/get-started/whats-new/customer-engagement/important-changes-coming#some-client-apis-are-deprecated External Link: Deprecated Client APIs}
          */
         securityRoles: string[];
         /**
+         * Returns a lookup object containing the ID, display name, and entity type of the transaction currency for the current user.
+         */
+        transactionCurrency: LookupValue;
+        /**
          * Returns the transaction currency ID for the current user.
+         * @deprecated Deprecated in v9.1; use {@link Xrm.UserSettings.transactionCurrency globalContext.userSettings.transactionCurrency} instead to display name along with the ID.
          */
         transactionCurrencyId: string;
         /**
@@ -439,7 +455,7 @@ declare namespace Xrm {
 
         /**
          * Gets all user security roles.
-         * @deprecated Deprecated in v9.  Use {@link Xrm.UserSettings.securityRoles globalContext.userSettings.securityRoles} instead.
+         * @deprecated Deprecated in v9.  Use {@link Xrm.UserSettings.roles globalContext.userSettings.roles} instead.
          * @see {@link https://docs.microsoft.com/en-us/dynamics365/get-started/whats-new/customer-engagement/important-changes-coming#some-client-apis-are-deprecated External Link: Deprecated Client APIs}
          * @returns An array of user role identifiers, in Guid format.
          * @example Example: ["cf4cc7ce-5d51-df11-97e0-00155db232d0"]
@@ -517,6 +533,11 @@ declare namespace Xrm {
              * @returns The stage object. For switching between entities, returns the previous stage object
              */
             getStage(): ProcessFlow.Stage;
+
+            /**
+             * Prevents the stage or status change operation from being submitted to the server.
+             */
+            preventDefault(): void;
         }
 
         /**
@@ -846,9 +867,11 @@ declare namespace Xrm {
 
         /**
          * Re-evaluates the ribbon's configured EnableRules.
+         * @param refreshAll Indicates whether all the ribbon command bars on the current page are refreshed. If you specify false only the page-level ribbon command bar is refreshed.
+         * If you do not specifiy this parameter, by default false is passed.
          * @remarks This method does not work with Microsoft Dynamics CRM for tablets.
          */
-        refreshRibbon(): void;
+        refreshRibbon(refreshAll?: boolean): void;
 
         /**
          * The business process flow API, used to interact with the business process flow control in a form.
@@ -970,7 +993,7 @@ declare namespace Xrm {
          * Opens a lookup control to select one or more items.
          * @param lookupOptions Defines the options for opening the lookup dialog
          */
-        lookupObjects(lookupOptions: LookupOptions): Async.PromiseLike<LookupValue>;
+        lookupObjects(lookupOptions: LookupOptions): Async.PromiseLike<LookupValue[]>;
 
         /**
          * Refreshes the parent grid containing the specified record.
@@ -1121,13 +1144,13 @@ declare namespace Xrm {
          * @deprecated Use {@link Xrm.WebApi.retrieveRecord} instead.
          * @see {@link https://docs.microsoft.com/en-us/dynamics365/get-started/whats-new/customer-engagement/important-changes-coming#some-client-apis-are-deprecated External Link: Deprecated Client APIs}
          */
-        retrieveRecord(entityType: string, id: string, options: string): Async.PromiseLike<Async.OfflineOperationSuccessCallbackObject>;
+        retrieveRecord(entityType: string, id: string, options?: string): Async.PromiseLike<Async.OfflineOperationSuccessCallbackObject>;
 
         /**
          * Retrieves a collection of entity records in mobile clients while working in the offline mode.
          *
          * @param entityType The logical name of the entity.
-         * @param options (Optional) The logical name of the enti
+         * @param options (Optional) The logical name of the entity
          * @param maxPageSize (Optional) A positive number to indicates the number of entity records to be returned per page.
          * * If you do not specify this parameter, the default value is passed as 5000.
          * * If the number of records being retrieved is more than maxPageSize, an @odata.nextLink property
@@ -1144,7 +1167,7 @@ declare namespace Xrm {
          * @deprecated Use {@link Xrm.WebApi.retrieveMultipleRecords} instead.
          * @see {@link https://docs.microsoft.com/en-us/dynamics365/get-started/whats-new/customer-engagement/important-changes-coming#some-client-apis-are-deprecated External Link: Deprecated Client APIs}
          */
-        retrieveMultipleRecords(entityType: string, options: string, maxPageSize: number): Async.PromiseLike<Array<{ [key: string]: any }>>;
+        retrieveMultipleRecords(entityType: string, options?: string, maxPageSize?: number): Async.PromiseLike<Array<{ [key: string]: any }>>;
 
         /**
          * Updates an entity record in mobile clients while working in the offline mode.
@@ -1299,19 +1322,24 @@ declare namespace Xrm {
         type IterativeDelegate<T> = (item: T, index?: number) => void;
 
         /**
-         * Interface for an item collection.
-         * @param T Generic type parameter.
+         * Defines collections that are index-able by string
+         * @param Generic type parameter.
          */
         interface Dictionary<T> {
             [key: string]: T;
-            [index: number]: T;
         }
+
+        /**
+         * Defines item collections that are index-able by string
+         * @param Generic type parameter.
+         */
+        type StringIndexableItemCollection<T> = Dictionary<T> & ItemCollection<T>;
 
         /**
          * Collections are structures to provide access to data that represent an array, but without the ability to modify the data in the array.
          * @see {@link https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/clientapi/reference/collections External Link: Collections (Client API reference)}
          */
-        type ItemCollection<T> = Dictionary<T> & {
+        interface ItemCollection<T> {
             /**
              * Applies an operation to all items in this collection.
              * @param delegate An iterative delegate function
@@ -1367,7 +1395,7 @@ declare namespace Xrm {
              * @returns The length.
              */
             getLength(): number;
-        };
+        }
     }
 
     /**
@@ -2054,7 +2082,7 @@ declare namespace Xrm {
          * @see {@link XrmEnum.AttributeType}
          */
         type AttributeType = "boolean" | "datetime" | "decimal" | "double" | "integer" |
-            "lookup" | "memo" | "money" | "multioptionset" | "optionset" | "string";
+            "lookup" | "memo" | "money" | "multiselectoptionset" | "optionset" | "string";
 
         /**
          * Attribute formats for {@link Attributes.Attribute.getFormat Attributes.Attribute.getFormat()}.
@@ -2095,7 +2123,7 @@ declare namespace Xrm {
              * * optionset
              * * string
              */
-            getAttributeType(): string;
+            getAttributeType(): AttributeType;
 
             /**
              * Gets the attribute format.
@@ -2502,6 +2530,28 @@ declare namespace Xrm {
         }
 
         /**
+         * Interface for UI elements which can have the disabled value read.
+         */
+        interface UiCanGetDisabledElement {
+            /**
+             * Gets a boolean value, indicating whether the control is disabled.
+             * @returns true if it is disabled, otherwise false.
+             */
+            getDisabled(): boolean;
+        }
+
+        /**
+         * Interface for UI elements which can have the disabled value updated.
+         */
+        interface UiCanSetDisabledElement {
+            /**
+             * Sets the state of the control to either enabled, or disabled.
+             * @param disabled true to disable, false to enable.
+             */
+            setDisabled(disabled: boolean): void;
+        }
+
+        /**
          * Interface for UI elements which can have the visibility value read.
          */
         interface UiCanGetVisibleElement {
@@ -2710,7 +2760,7 @@ declare namespace Xrm {
          * Interface for a standard control.
          * @see {@link Control}
          */
-        interface StandardControl extends Control, UiStandardElement, UiFocusable {
+        interface StandardControl extends Control, UiStandardElement, UiFocusable, UiCanGetDisabledElement, UiCanSetDisabledElement {
             /**
              * Clears the notification identified by uniqueId.
              * @param uniqueId (Optional) Unique identifier.
@@ -2718,18 +2768,6 @@ declare namespace Xrm {
              * @remarks If the uniqueId parameter is not used, the current notification shown will be removed.
              */
             clearNotification(uniqueId?: string): boolean;
-
-            /**
-             * Gets a boolean value, indicating whether the control is disabled.
-             * @returns true if it is disabled, otherwise false.
-             */
-            getDisabled(): boolean;
-
-            /**
-             * Sets the state of the control to either enabled, or disabled.
-             * @param disabled true to disable, false to enable.
-             */
-            setDisabled(disabled: boolean): void;
 
             /**
              * Sets a control-local notification message.
@@ -2900,7 +2938,7 @@ declare namespace Xrm {
              * Removes the handler from the "pre search" event of the Lookup control.
              * @param handler The handler.
              */
-            removePreSearch(handler: () => void): void;
+            removePreSearch(handler: Events.ContextSensitiveHandler): void;
 
             /**
              * Sets the Lookup's default view.
@@ -2968,7 +3006,7 @@ declare namespace Xrm {
              *
              * @param handler The event handler.
              */
-            addOnLoad(handler: () => void): void;
+            addOnLoad(handler: Events.ContextSensitiveHandler): void;
 
             /**
              * This method returns context information about the GridControl.
@@ -3001,6 +3039,12 @@ declare namespace Xrm {
              * @remarks Not available during the "on load" event of the form.
              */
             refresh(): void;
+
+            /**
+             * Refreshes the sub grid ribbon.
+             * @see {@link https://docs.microsoft.com/it-it/powerapps/developer/model-driven-apps/clientapi/reference/grids/gridcontrol/refreshribbon External Link: refreshRibbon (Client API reference)}
+             */
+            refreshRibbon(): void;
 
             /**
              * Use this method to remove event handlers from the GridControl's OnLoad event.
@@ -3117,6 +3161,15 @@ declare namespace Xrm {
          */
         interface FramedControl extends Control {
             /**
+             * Returns the content window that represents an IFRAME or web resource.
+             * @returns A promise that contains a content window instance representing an IFRAME or web resource.
+             * @remarks This method is supported only on Unified Interface.  The implementer is expected to call
+             * a custom function within the returned window that will receive the Xrm and formContext objects as
+             * parameters.
+             */
+            getContentWindow(): Promise<Window>;
+
+            /**
              * Gets the DOM element containing the control.
              * @returns The container object.
              * @remarks Unavailable for Microsoft Dynamics CRM for tablets.
@@ -3155,7 +3208,7 @@ declare namespace Xrm {
          * Interface for a quick view control instance on a form.
          * @see {@link https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/clientapi/reference/formcontext-ui-quickforms External Link: formContext.ui.quickForms (Client API reference)}
          */
-        interface QuickFormControl extends Control, UiLabelElement, UiCanGetVisibleElement {
+        interface QuickFormControl extends Control, UiLabelElement, UiFocusable, UiCanGetDisabledElement, UiCanSetDisabledElement, UiCanGetVisibleElement, UiCanSetVisibleElement {
             /**
              * Gets the constituent controls in a quick view control.
              * @returns An array of controls.
@@ -3202,6 +3255,12 @@ declare namespace Xrm {
              * @returns Returns a string value ("quickform") that categorizes quick view controls.
              */
             getControlType(): ControlQuickFormType;
+
+            /**
+             * Gets a reference to the Section parent of the control.
+             * @returns The parent Section.
+             */
+            getParent(): Section;
 
             /**
              * Returns whether the data binding for the constituent controls in a quick view control is complete.
@@ -3266,6 +3325,12 @@ declare namespace Xrm {
          */
         interface Tab extends UiStandardElement, UiFocusable {
             /**
+             * Adds a function to be called when the TabStateChange event occurs.
+             * @param handler The function to be executed on the TabStateChange event.
+             */
+            addTabStateChange(handler: Events.ContextSensitiveHandler): void;
+
+            /**
              * Gets display state of the tab.
              * @returns The display state, as either "expanded" or "collapsed"
              */
@@ -3282,6 +3347,12 @@ declare namespace Xrm {
              * @returns The parent.
              */
             getParent(): Ui;
+
+            /**
+             * Removes a function to be called when the TabStateChange event occurs.
+             * @param handler The function to be removed from the TabStateChange event.
+             */
+            removeTabStateChange(handler: Events.ContextSensitiveHandler): void;
 
             /**
              * Sets display state of the tab.
@@ -3433,7 +3504,7 @@ declare namespace Xrm {
              * Use this method to get a reference to the current view.
              * @returns The current view.
              */
-            getCurrentView(): ViewSelectorItem;
+            getCurrentView(): LookupValue;
 
             /**
              * Use this method to determine whether the view selector is visible.
@@ -3445,7 +3516,7 @@ declare namespace Xrm {
              * Use this method to set the current view.
              * @param viewSelectorItem The view selector item.
              */
-            setCurrentView(viewSelectorItem: ViewSelectorItem): void;
+            setCurrentView(viewSelectorItem: LookupValue): void;
         }
 
         /**
@@ -3536,9 +3607,9 @@ declare namespace Xrm {
 
         /**
          * Saves the record with the given save mode.
-         * @param saveMode (Optional) the save mode to save, as either "saveandclose" or "saveandnew".
+         * @param saveMode (Optional) the save mode to save, as either "saveandclose" or "saveandnew".  If no parameter is included in the method, the record will simply be saved.
          */
-        save(saveMode: EntitySaveMode): void;
+        save(saveMode?: EntitySaveMode): void;
 
         /**
          * The collection of attributes for the record.
@@ -3687,14 +3758,14 @@ declare namespace Xrm {
              * Returns all process instances for the entity record that the calling user has access to.
              * @param callbackFunction (Optional) a function to call when the operation is complete.
              */
-            getProcessInstances(callbackFunction: GetProcessInstancesDelegate): void;
+            getProcessInstances(callbackFunction?: GetProcessInstancesDelegate): void;
 
             /**
              * Sets a process instance as the active instance
              * @param processInstanceId The Id of the process instance to make the active instance.
              * @param callbackFunction (Optional) a function to call when the operation is complete.
              */
-            setActiveProcessInstance(processInstanceId: string, callbackFunction: SetProcessInstanceDelegate): void;
+            setActiveProcessInstance(processInstanceId: string, callbackFunction?: SetProcessInstanceDelegate): void;
 
             /**
              * Returns a Stage object representing the active stage.
@@ -3741,6 +3812,42 @@ declare namespace Xrm {
             getSelectedStage(): Stage;
 
             /**
+             * Use this to add a function as an event handler for the OnPreProcessStatusChange event so that it will be called before the
+             * business process flow status changes.
+             * @param handler The function will be added to the bottom of the event
+             *                handler pipeline. The execution context is automatically
+             *                set to be the first parameter passed to the event handler.
+             *                Use a reference to a named function rather than an
+             *                anonymous function if you may later want to remove the
+             *                event handler.
+             */
+            addOnPreProcessStatusChange(handler: Events.ContextSensitiveHandler): void;
+
+            /**
+             * Use this to add a function as an event handler for the OnPreStageChange event so that it will be called before the
+             * business process flow stage changes.
+             * @param handler The function will be added to the bottom of the event
+             *                handler pipeline. The execution context is automatically
+             *                set to be the first parameter passed to the event handler.
+             *                Use a reference to a named function rather than an
+             *                anonymous function if you may later want to remove the
+             *                event handler.
+             */
+            addOnPreStageChange(handler: Events.ContextSensitiveHandler): void;
+
+            /**
+             * Use this to add a function as an event handler for the OnPreProcessStatusChange event so that it will be called when the
+             * business process flow status changes.
+             * @param handler The function will be added to the bottom of the event
+             *                handler pipeline. The execution context is automatically
+             *                set to be the first parameter passed to the event handler.
+             *                Use a reference to a named function rather than an
+             *                anonymous function if you may later want to remove the
+             *                event handler.
+             */
+            addOnProcessStatusChange(handler: Events.ContextSensitiveHandler): void;
+
+            /**
              * Use this to add a function as an event handler for the OnStageChange event so that it will be called when the
              * business process flow stage changes.
              * @param handler The function will be added to the bottom of the event
@@ -3753,18 +3860,6 @@ declare namespace Xrm {
             addOnStageChange(handler: Events.ContextSensitiveHandler): void;
 
             /**
-             * Use this to add a function as an event handler for the OnProcessStatusChange event so that it will be called when the
-             * business process flow status changes.
-             * @param handler The function will be added to the bottom of the event
-             *                handler pipeline. The execution context is automatically
-             *                set to be the first parameter passed to the event handler.
-             *                Use a reference to a named function rather than an
-             *                anonymous function if you may later want to remove the
-             *                event handler.
-             */
-            addOnProcessStatusChange(handler: Events.ProcessStatusChangeHandler): void;
-
-            /**
              * Use this to add a function as an event handler for the OnStageSelected event so that it will be called
              * when a business process flow stage is selected.
              * @param handler The function will be added to the bottom of the event
@@ -3775,6 +3870,20 @@ declare namespace Xrm {
              *                event handler.
              */
             addOnStageSelected(handler: Events.ContextSensitiveHandler): void;
+
+            /**
+             * Use this to remove a function as an event handler for the OnPreProcessStatusChange event.
+             * @param handler If an anonymous function is set using the addOnPreProcessStatusChange method it
+             *                cannot be removed using this method.
+             */
+            removeOnPreProcessStatusChange(handler: Events.ProcessStatusChangeHandler): void;
+
+            /**
+             * Use this to remove a function as an event handler for the OnPreStageChange event.
+             * @param handler If an anonymous function is set using the addOnPreStageChange method it
+             *                cannot be removed using this method.
+             */
+            removeOnPreStageChange(handler: Events.ContextSensitiveHandler): void;
 
             /**
              * Use this to remove a function as an event handler for the OnProcessStatusChange event.
@@ -3832,7 +3941,7 @@ declare namespace Xrm {
              * @param status The new status for the process
              * @param callbackFunction (Optional) a function to call when the operation is complete.
              */
-            setStatus(status: ProcessStatus, callbackFunction: ProcessSetStatusDelegate): void;
+            setStatus(status: ProcessStatus, callbackFunction?: ProcessSetStatusDelegate): void;
         }
 
         /**
@@ -4136,6 +4245,10 @@ declare namespace Xrm {
              *  The message to be displyed in the alert dialog.
              */
             text: string;
+            /**
+             * (Optional) The title of the alert dialog.
+             */
+            title?: string;
         }
 
         interface ConfirmStrings {
@@ -4191,6 +4304,13 @@ declare namespace Xrm {
              * true if the confirm button was clicked to close the dialog.
              */
             confirmed: boolean;
+        }
+
+        interface OpenFormResult {
+            /**
+             * Identifies the record displayed or created
+             */
+            savedEntityReference: LookupValue[];
         }
 
         /**
@@ -4338,6 +4458,118 @@ declare namespace Xrm {
              */
             roleType?: XrmEnum.RoleType;
         }
+
+        interface PageInputEntityRecord {
+            pageType: "entityrecord";
+            /**
+             * Logical name of the entity to display the form for.
+             * */
+            entityName: string;
+            /**
+             * ID of the entity record to display the form for. If you don't specify this value, the form will be opened in create mode.
+             * */
+            entityId?: string;
+            /**
+             * Designates a record that will provide default values based on mapped attribute values. The lookup object has the following String properties: entityType, id, and name (optional).
+             */
+            createFromEntity?: boolean;
+            /**
+             * A dictionary object that passes extra parameters to the form. Invalid parameters will cause an error.
+             */
+            data?: { [attributeName: string]: any };
+            /**
+             * ID of the form instance to be displayed.
+             */
+            formId?: string;
+            /**
+             * Indicates whether the form is navigated to from a different entity using cross-entity business process flow.
+             */
+            isCrossEntityNavigate?: boolean;
+            /**
+             * Indicates whether there are any offline sync errors.
+             */
+            isOfflineSyncError?: boolean;
+            /**
+             * ID of the business process to be displayed on the form.
+             */
+            processId?: string;
+            /**
+             * ID of the business process instance to be displayed on the form.
+             */
+            processInstanceId?: string;
+            /**
+             * Define a relationship object to display the related records on the form.
+             */
+            relationship?: Relationship;
+            /**
+             * ID of the selected stage in business process instance.
+             */
+            selectedStageId?: string;
+        }
+
+        interface PageInputEntityList {
+            pageType: "entitylist";
+            /**
+             * The logical name of the entity to load in the list control.
+             * */
+            entityName: string;
+            /**
+             * The ID of the view to load. If you don't specify it, navigates to the default main view for the entity.
+             * */
+            viewId?: string;
+            /**
+             * Type of view to load. Specify "savedquery" or "userquery".
+             * */
+            viewType?: "savedquery" |"userquery";
+        }
+
+        interface PageInputHtmlWebResource {
+            pageType: "webresource";
+            /**
+             * The name of the web resource to load.
+             * */
+            webresourceName: string;
+            /**
+             * The data to pass to the web resource.
+             * */
+            data?: string;
+        }
+
+        /**
+         * Options for navigating to a page: whether to open inline or in a dialog. If you don't specify this parameter, page is opened inline by default.
+         * */
+        interface NavigationOptions {
+            /**
+             * Specify 1 to open the page inline; 2 to open the page in a dialog.
+             * Entity lists can only be opened inline; web resources can be opened either inline or in a dialog.
+             * */
+            target: 1 | 2;
+            /**
+             * The width of dialog. To specify the width in pixels, just type a numeric value. To specify the width in percentage, specify an object of type
+             * */
+            width?: number | NavigationOptions.SizeValue;
+            /**
+            * The width of dialog. To specify the width in pixels, just type a numeric value. To specify the width in percentage, specify an object of type
+            * */
+            height?: number | NavigationOptions.SizeValue;
+            /**
+             * Specify 1 to open the dialog in center; 2 to open the dialog on the side. Default is 1 (center).
+             * */
+            position?: 1 | 2;
+        }
+
+        namespace NavigationOptions {
+            interface SizeValue {
+                /**
+                 * The numerical value
+                 * */
+                value: number;
+                /**
+                 * The unit of measurement. Specify "%" or "px". Default value is "px"
+                 * */
+                unit: "%" | "px";
+            }
+        }
     }
 
     /**
@@ -4345,35 +4577,41 @@ declare namespace Xrm {
      */
     interface Navigation {
         /**
+         * Navigates to the specified page.
+         * @param pageInput Input about the page to navigate to. The object definition changes depending on the type of page to navigate to: entity list or HTML web resource.
+         * @param navigationOptions Options for navigating to a page: whether to open inline or in a dialog. If you don't specify this parameter, page is opened inline by default.
+         */
+        navigateTo(pageInput: Navigation.PageInputEntityRecord | Navigation.PageInputEntityList | Navigation.PageInputHtmlWebResource, navigationOptions?: Navigation.NavigationOptions): Async.PromiseLike<any>;
+
+        /**
          * Displays an alert dialog containing a message and a button.
          * @param alertStrings The strings to be used in the alert dialog.
          * @param alertOptions The height and width options for alert dialog
          */
-        openAlertDialog(alertStrings: Navigation.AlertStrings, alertOptions: Navigation.DialogSizeOptions): Async.PromiseLike<any>;
+        openAlertDialog(alertStrings: Navigation.AlertStrings, alertOptions?: Navigation.DialogSizeOptions): Async.PromiseLike<any>;
 
         /**
          * Displays a confirmation dialog box containing a message and two buttons.
          * @param confirmStrings The strings to be used in the confirm dialog.
          * @param confirmOptions The height and width options for alert dialog
          */
-        openConfirmDialog(confirmStrings: Navigation.ConfirmStrings, confirmOptions: Navigation.DialogSizeOptions): Async.PromiseLike<Navigation.ConfirmResult>;
+        openConfirmDialog(confirmStrings: Navigation.ConfirmStrings, confirmOptions?: Navigation.DialogSizeOptions): Async.PromiseLike<Navigation.ConfirmResult>;
 
         /**
          * Displays an error dialog.
-         * @param confirmStrings The strings to be used in the confirm dialog.
-         * @param confirmOptions The height and width options for alert dialog
+         * @param errorOptions An object to specify the options for error dialog.
          */
-        openConfirmDialog(errorOptions: Navigation.ErrorDialogOptions): Async.PromiseLike<any>;
+        openErrorDialog(errorOptions: Navigation.ErrorDialogOptions): Async.PromiseLike<any>;
 
         /**
          * Opens a file.
          */
-        openFile(file: Navigation.FileDetails, openFileOptions: XrmEnum.OpenFileOptions): void;
+        openFile(file: Navigation.FileDetails, openFileOptions?: XrmEnum.OpenFileOptions): void;
 
         /**
          * Opens an entity form or a quick create form.
          */
-        openForm(entityFormOptions: Navigation.EntityFormOptions, formParameters: Utility.OpenParameters): Async.PromiseLike<any>;
+        openForm(entityFormOptions: Navigation.EntityFormOptions, formParameters?: Utility.OpenParameters): Async.PromiseLike<Navigation.OpenFormResult>;
 
         /**
          * Opens a URL, including file URLs.
@@ -4403,7 +4641,7 @@ declare namespace Xrm {
             /**
              * @see {@link https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/clientapi/reference/collections External Link: Collections (Client API reference)}
              */
-            Attributes: Collection.ItemCollection<AttributeMetadata>;
+            Attributes: Collection.StringIndexableItemCollection<AttributeMetadata>;
             AutoRouteToOwnerQueue: boolean;
             CanEnableSyncToExternalSearchIndex: boolean;
             CanBeInManyToMany: boolean;
@@ -4466,7 +4704,7 @@ declare namespace Xrm {
             /**
              * @see {@link https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/clientapi/reference/collections External Link: Collections (Client API reference)}
              */
-            LocalizedLabels: Collection.ItemCollection<LocalizedLabel>;
+            LocalizedLabels: LocalizedLabel[];
             UserLocalizedLabel: LocalizedLabel;
         }
 
@@ -4482,19 +4720,18 @@ declare namespace Xrm {
          * Type to hold the Attribute metadata as part of the EntityMetadata
          */
         interface AttributeMetadata {
-            defaultFormValue: number;
+            DefaultFormValue: number;
             /**
              * @see {@link https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/clientapi/reference/collections External Link: Collections (Client API reference)}
              */
-            options: Collection.ItemCollection<string>;
-            logicalName: string;
-            displayName: string;
-            attributeType: XrmEnum.AttributeTypeCode;
-            entityLogicalName: string;
+            LogicalName: string;
+            DisplayName: string;
+            AttributeType: XrmEnum.AttributeTypeCode;
+            EntityLogicalName: string;
             /**
              * @see {@link https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/clientapi/reference/collections External Link: Collections (Client API reference)}
              */
-            optionSet: Collection.ItemCollection<OptionMetadata>;
+            OptionSet: OptionMetadata[];
         }
 
         /**
@@ -4621,7 +4858,7 @@ declare namespace Xrm {
          * Invokes the device camera to capture an image.
          * @returns On success, returns Base64 encoded file
          */
-        captureImage(imageOptions: Device.CaptureImageOptions): Async.PromiseLike<Device.CaptureFileResponse>;
+        captureImage(imageOptions?: Device.CaptureImageOptions): Async.PromiseLike<Device.CaptureFileResponse>;
 
         /**
          * Invokes the device camera to capture video.
@@ -4645,7 +4882,7 @@ declare namespace Xrm {
          * Opens a dialog box to select files from your computer (web client) or mobile device (mobile clients).
          * @returns On success, returns an array of files
          */
-        pickFile(pickFileOptions: Device.PickFileOptions): Async.PromiseLike<Device.CaptureFileResponse[]>;
+        pickFile(pickFileOptions?: Device.PickFileOptions): Async.PromiseLike<Device.CaptureFileResponse[]>;
     }
 
     /**
@@ -4751,7 +4988,7 @@ declare namespace Xrm {
          * @returns On success, returns a promise object containing the attributes specified earlier in the description of the successCallback parameter.
          * @see {@link https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/clientapi/reference/xrm-webapi/createrecord External Link: createRecord (Client API reference)}
          */
-        createRecord(entityLogicalName: string, record: any): Async.PromiseLike<string>;
+        createRecord(entityLogicalName: string, record: any): Async.PromiseLike<CreateResponse>;
 
         /**
          * Deletes an entity record.
@@ -4781,7 +5018,7 @@ declare namespace Xrm {
          * @returns On success, returns a promise containing a JSON object with the retrieved attributes and their values.
          * @see {@link https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/clientapi/reference/xrm-webapi/retrieverecord External Link: retrieveRecord (Client API reference)}
          */
-        retrieveRecord(entityLogicalName: string, id: string, options: string): Async.PromiseLike<any>;
+        retrieveRecord(entityLogicalName: string, id: string, options?: string): Async.PromiseLike<any>;
 
         /**
          * Retrieves a collection of entity records.
@@ -4813,6 +5050,14 @@ declare namespace Xrm {
     }
 
     /**
+     * Interface for the WebAPI CreateRecord request response
+     */
+    interface CreateResponse {
+        entityType: string;
+        id: string;
+    }
+
+    /**
      * Interface for the Promise error response arguments
      */
     interface ErrorResponse {
@@ -4837,38 +5082,7 @@ declare namespace Xrm {
     /**
      * Interface for the WebAPI Execute request response
      */
-    interface ExecuteResponse {
-        /**
-         * (Optional). Object.Response body.
-         */
-        body: string;
-        /**
-         * Response headers.
-         */
-        headers: any;
-        /**
-         * Indicates whether the request was successful.
-         */
-        ok: boolean;
-        /**
-         * Numeric value in the response status code.
-         * @example 200
-         */
-        status: number;
-        /**
-         * Description of the response status code.
-         * @example "OK"
-         */
-        statusText: string;
-        /**
-         * Response type.Values are: the empty string (default), "arraybuffer", "blob", "document", "json", and "text".
-         */
-        type: string;
-        /**
-         * Request URL of the action, function, or CRUD request that was sent to the Web API endpoint.
-         */
-        url: string;
-    }
+    interface ExecuteResponse extends Response { }
 }
 
 declare namespace XrmEnum {
@@ -5011,10 +5225,10 @@ declare namespace XrmEnum {
     }
 
     const enum ClientFormFactor {
-        Unknown = 1,
-        Desktop = 2,
-        Tablet = 3,
-        Phone = 4
+        Unknown = 0,
+        Desktop = 1,
+        Tablet = 2,
+        Phone = 3
     }
 
     /**
@@ -5160,6 +5374,7 @@ declare namespace XrmEnum {
         Lookup = "lookup",
         Memo = "memo",
         Money = "money",
+        MultiOptionSet = "multioptionset",
         OptionSet = "optionset",
         String = "string"
     }
@@ -5173,6 +5388,7 @@ declare namespace XrmEnum {
         IFrame = "iframe",
         Lookup = "lookup",
         OptionSet = "optionset",
+        MultiSelectOptionSet = "multiselectoptionset",
         SubGrid = "subgrid",
         WebResource = "webresource",
         Notes = "notes",
@@ -5239,12 +5455,12 @@ declare namespace XrmEnum {
     }
 
     /**
-     * Constant Enum: Posible file types for Xrm.Device.pickFile options
+     * Constant Enum: Possible file types for Xrm.Device.pickFile options
      * @see {@link Xrm.Device.PickFileTypes}
      */
     const enum DevicePickFileType {
         Audio = "audio",
-        Video = "vidoe",
+        Video = "video",
         Image = "image"
     }
 }

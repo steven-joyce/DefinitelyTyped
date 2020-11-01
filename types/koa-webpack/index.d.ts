@@ -1,30 +1,47 @@
-// Type definitions for koa-webpack 1.0
-// Project: https://github.com/shellscape/koa-webpack#readme
+// Type definitions for koa-webpack 6.0
+// Project: https://github.com/shellscape/koa-webpack
 // Definitions by: Luka Maljic <https://github.com/malj>
+//                 Lee Benson <https://github.com/leebenson>
+//                 miZyind <https://github.com/miZyind>
+//                 Tomek Łaziuk <https://github.com/tlaziuk>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // TypeScript Version: 2.3
 
 import Koa = require('koa');
 import webpack = require('webpack');
 import webpackDevMiddleware = require('webpack-dev-middleware');
-import webpackHotMiddleware = require('webpack-hot-middleware');
-import connect = require('connect');
+import webpackHotClient = require('webpack-hot-client');
+
+declare module 'koa' {
+    interface DefaultState {
+        fs: webpackDevMiddleware.Options['fs'];
+        stats: webpack.Stats;
+    }
+}
 
 declare function koaWebpack(
-    options?: koaWebpack.Options
-): Koa.Middleware & koaWebpack.CombinedWebpackMiddleware;
+    options?: koaWebpack.Options,
+): Promise<Koa.Middleware & koaWebpack.CombinedWebpackMiddleware>;
 
 declare namespace koaWebpack {
     interface Options {
         compiler?: webpack.Compiler;
         config?: webpack.Configuration;
-        dev?: webpackDevMiddleware.Options;
-        hot?: webpackHotMiddleware.Options;
+        devMiddleware?: webpackDevMiddleware.Options;
+        hotClient?: webpackHotClient.Options | boolean;
     }
 
     interface CombinedWebpackMiddleware {
-        dev: connect.NextHandleFunction & webpackDevMiddleware.WebpackDevMiddleware;
-        hot: connect.NextHandleFunction & webpackHotMiddleware.EventStream;
+        devMiddleware: webpackDevMiddleware.WebpackDevMiddleware;
+        /**
+         * @todo make this a `webpack-hot-client@^4.0.0` instance, no typings for v4 available yet
+         */
+        hotClient: {
+            close: () => void;
+            options: webpackHotClient.Options;
+            server: any;
+        };
+        close(callback?: () => any): void;
     }
 }
 

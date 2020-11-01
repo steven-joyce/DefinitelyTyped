@@ -1,7 +1,7 @@
 // Type definitions for bLazy v1.5.2
 // Project: https://github.com/dinbror/blazy
 // Definitions by: Julien Paroche <https://github.com/julienpa>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/blazy
+// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // Definitions based on: http://dinbror.dk/blog/blazy
 
 declare var Blazy: Blazy;
@@ -53,7 +53,7 @@ interface BlazyInstance {
    * Forces the given element(s) to load if not collapsed. If you also want to load a collapsed/hidden elements you can add true as the second parameter.
    * You can pass a single element or a list of elements. Tested with getElementById, getElementsByClassName, querySelectorAll, querySelector and jQuery selector.
    */
-  load(elements: Element|Element[]|HTMLElement|HTMLElement[]|NodeList, force: boolean): void;
+  load(elements: Element|Element[]|HTMLElement|HTMLElement[]|HTMLCollection|NodeList, force: boolean): void;
 
   /**
    * Unbind events and resets image array.

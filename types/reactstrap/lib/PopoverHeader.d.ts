@@ -1,10 +1,11 @@
+import * as React from 'react';
 import { CSSModule } from '../index';
 
 export interface PopoverHeaderProps extends React.HTMLAttributes<HTMLElement> {
-  tag?: React.ReactType;
-  className?: string;
-  cssModule?: CSSModule;
+    [key: string]: any;
+    tag?: React.ElementType;
+    cssModule?: CSSModule;
 }
 
-declare const PopoverHeader: React.StatelessComponent<PopoverHeaderProps>;
+declare class PopoverHeader<T = {[key: string]: any}> extends React.Component<PopoverHeaderProps> {}
 export default PopoverHeader;

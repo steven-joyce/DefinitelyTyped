@@ -7,13 +7,14 @@
  */
 
 import * as d3Scale from 'd3-scale';
-import { interpolateCubehelix } from 'd3-interpolate';
+import { interpolateCubehelix, interpolateRound } from 'd3-interpolate';
 import { timeHour } from 'd3-time';
 import {
     schemePuRd,
-    interpolateRainbow,
     interpolateCool,
-    interpolateInferno
+    interpolateInferno,
+    interpolateRainbow,
+    interpolateSpectral,
 } from 'd3-scale-chromatic';
 
 // -------------------------------------------------------------------------------
@@ -47,8 +48,8 @@ let date: Date;
 
 let clampFlag: boolean;
 
-let outputNumber: number;
-let outputString: string;
+let outputNumber: number | undefined;
+let outputString: string | undefined;
 
 let domainNumbers: number[] = [1, 100];
 const domainNumeric: NumCoercible[] = [new NumCoercible(0), new NumCoercible(100)];
@@ -68,6 +69,9 @@ let numExtent: [number, number];
 let numOrUndefinedExtent: [number | undefined, number | undefined];
 
 let outputNumberMaybe: number | undefined;
+
+tickFormatNumberFn = d3Scale.tickFormat(0, 10, 5, '+%');
+
 // -------------------------------------------------------------------------------
 // Linear Scale Factory
 // -------------------------------------------------------------------------------
@@ -81,6 +85,7 @@ let linearScaleNumString: d3Scale.ScaleLinear<number, string>;
 linearScaleNumber = d3Scale.scaleLinear();
 linearScaleString = d3Scale.scaleLinear<string>();
 linearScaleNumString = d3Scale.scaleLinear<number, string>();
+linearScaleNumber = d3Scale.scaleLinear([0, 5], [0, 5]);
 
 // ScaleLinear Interface ========================================================
 
@@ -125,6 +130,11 @@ linearScaleNumber = linearScaleNumber.rangeRound(rangeNumbers);
 
 linearScaleNumber = linearScaleNumber.clamp(true);
 clampFlag = linearScaleNumber.clamp();
+
+// unknown(...) -----------------------------------------------------------------
+
+linearScaleNumber = linearScaleNumber.unknown(5);
+const linearScaleNumberUnknownValue = linearScaleNumber.unknown();
 
 // interpolate(...) -----------------------------------------------------------------
 
@@ -183,6 +193,7 @@ let powerScaleNumString: d3Scale.ScalePower<number, string>;
 powerScaleNumber = d3Scale.scalePow();
 powerScaleString = d3Scale.scalePow<string>();
 powerScaleNumString = d3Scale.scalePow<number, string>();
+powerScaleNumber = d3Scale.scalePow([0, 5], [0, 5]);
 
 let squarerootScaleNumber: d3Scale.ScalePower<number, number>;
 let squarerootScaleString: d3Scale.ScalePower<string, string>;
@@ -191,6 +202,7 @@ let squarerootScaleNumString: d3Scale.ScalePower<number, string>;
 squarerootScaleNumber = d3Scale.scaleSqrt();
 squarerootScaleString = d3Scale.scaleSqrt<string>();
 squarerootScaleNumString = d3Scale.scaleSqrt<number, string>();
+squarerootScaleNumber = d3Scale.scaleSqrt([0, 5], [0, 5]);
 
 // ScalePower Interface ========================================================
 
@@ -293,6 +305,7 @@ let logScaleNumString: d3Scale.ScaleLogarithmic<number, string>;
 logScaleNumber = d3Scale.scaleLog();
 logScaleString = d3Scale.scaleLog<string>();
 logScaleNumString = d3Scale.scaleLog<number, string>();
+logScaleNumber = d3Scale.scaleLog([0, 5], [0, 5]);
 
 // ScaleLogarithmic Interface ========================================================
 
@@ -357,7 +370,8 @@ logScaleNumString = logScaleNumString.interpolate((a, b) => {
 
 // chainable
 logScaleNumber = logScaleNumber.nice();
-// logScaleNumber = logScaleNumber.nice(5); // fails, logarithmic scale does not support count parameter.
+// $ExpectError
+logScaleNumber = logScaleNumber.nice(5); // fails, logarithmic scale does not support count parameter.
 
 // ticks(...) -----------------------------------------------------------------
 
@@ -383,6 +397,34 @@ outputString = logScaleNumString(10);
 const copiedLogScale: d3Scale.ScaleLogarithmic<number, string> = logScaleNumString.copy();
 
 // -------------------------------------------------------------------------------
+// SymLog Scale Factory
+// -------------------------------------------------------------------------------
+
+// scaleLog() ---------------------------------------------------------------------
+
+let symLogScaleNumber: d3Scale.ScaleSymLog<number, number>;
+let symLogScaleString: d3Scale.ScaleSymLog<string, string>;
+let symLogScaleNumString: d3Scale.ScaleSymLog<number, string>;
+
+symLogScaleNumber = d3Scale.scaleSymlog();
+symLogScaleString = d3Scale.scaleSymlog<string>();
+symLogScaleNumString = d3Scale.scaleSymlog<number, string>();
+symLogScaleNumber = d3Scale.scaleSymlog([0, 5], [0, 5]);
+// ScaleSymLog Interface ========================================================
+
+// constant --------------------------------------------------------------------
+
+const constant: number = symLogScaleNumber.constant();
+
+symLogScaleNumber = symLogScaleNumber.constant(2);
+
+// tickFormat(...) -----------------------------------------------------------------
+
+tickFormatNumberFn = symLogScaleNumber.tickFormat();
+tickFormatNumberFn = symLogScaleNumber.tickFormat(5);
+tickFormatNumberFn = symLogScaleNumber.tickFormat(5, '+%');
+
+// -------------------------------------------------------------------------------
 // Identity Scale Factory
 // -------------------------------------------------------------------------------
 
@@ -391,6 +433,7 @@ const copiedLogScale: d3Scale.ScaleLogarithmic<number, string> = logScaleNumStri
 let identityScale: d3Scale.ScaleIdentity;
 
 identityScale = d3Scale.scaleIdentity();
+identityScale = d3Scale.scaleIdentity([0, 5]);
 
 // ScaleIdentity Interface ========================================================
 
@@ -436,6 +479,18 @@ outputNumber = identityScale(10);
 const copiedIdentityScale: d3Scale.ScaleIdentity = identityScale.copy();
 
 // -------------------------------------------------------------------------------
+// Radial Scale Factory
+// -------------------------------------------------------------------------------
+
+// scaleRadial() ---------------------------------------------------------------------
+
+let radialScaleNumber: d3Scale.ScaleContinuousNumeric<number, number>;
+
+radialScaleNumber = d3Scale.scaleRadial();
+radialScaleNumber = d3Scale.scaleRadial([0, 5]);
+radialScaleNumber = d3Scale.scaleRadial([0, 5], [0, 5]);
+
+// -------------------------------------------------------------------------------
 // Time Scale Factories
 // -------------------------------------------------------------------------------
 
@@ -448,6 +503,7 @@ let localTimeScaleNumString: d3Scale.ScaleTime<number, string>;
 localTimeScaleNumber = d3Scale.scaleTime();
 localTimeScaleString = d3Scale.scaleTime<string>();
 localTimeScaleNumString = d3Scale.scaleTime<number, string>();
+localTimeScaleNumber = d3Scale.scaleTime([0, 5], [0, 5]);
 
 let utcScaleNumber: d3Scale.ScaleTime<number, number>;
 let utcScaleString: d3Scale.ScaleTime<string, string>;
@@ -456,6 +512,7 @@ let utcScaleNumString: d3Scale.ScaleTime<number, string>;
 utcScaleNumber = d3Scale.scaleUtc();
 utcScaleString = d3Scale.scaleUtc<string>();
 utcScaleNumString = d3Scale.scaleUtc<number, string>();
+utcScaleNumber = d3Scale.scaleUtc([0, 5], [0, 5]);
 
 // domain(...) -----------------------------------------------------------------
 
@@ -512,9 +569,9 @@ localTimeScaleNumString = localTimeScaleNumString.interpolate((a, b) => {
 localTimeScaleNumber = localTimeScaleNumber.nice();
 localTimeScaleNumber = localTimeScaleNumber.nice(5);
 localTimeScaleNumber = localTimeScaleNumber.nice(timeHour);
-localTimeScaleNumber = localTimeScaleNumber.nice(timeHour, 5);
 
-// localTimeScaleNumber = localTimeScaleNumber.nice(timeHour.every(5)); // fails, requires CountableTimeInterval
+// $ExpectError
+localTimeScaleNumber = localTimeScaleNumber.nice(timeHour.every(5)); // fails, requires CountableTimeInterval
 
 // ticks(...) -----------------------------------------------------------------
 
@@ -555,8 +612,16 @@ const copiedTimeScale: d3Scale.ScaleTime<number, string> = localTimeScaleNumStri
 
 let sequentialScaleColorString: d3Scale.ScaleSequential<string>;
 
+sequentialScaleColorString = d3Scale.scaleSequential<string>();
+sequentialScaleColorString = d3Scale.scaleSequentialLog<string>();
+sequentialScaleColorString = d3Scale.scaleSequentialPow<string>();
+sequentialScaleColorString = d3Scale.scaleSequentialSqrt<string>();
+sequentialScaleColorString = d3Scale.scaleSequentialSymlog<string>();
+sequentialScaleColorString = d3Scale.scaleSequentialQuantile<string>();
 sequentialScaleColorString = d3Scale.scaleSequential<string>(interpolateRainbow);
 sequentialScaleColorString = d3Scale.scaleSequential(interpolateCool); // inferred Output type string
+sequentialScaleColorString = d3Scale.scaleSequential([0, 5], interpolateRainbow);
+sequentialScaleColorString = d3Scale.scaleSequential([0, 5], ['#000000', '#ffffff']);
 
 // ScaleSequential Interface ========================================================
 
@@ -578,6 +643,15 @@ sequentialScaleColorString = sequentialScaleColorString.interpolator(interpolate
 let sequentialInterpolator: (t: number) => string;
 sequentialInterpolator = sequentialScaleColorString.interpolator();
 
+// range(...) ----------------------------------------------------------------
+
+const rangeSequential: [string, string] = sequentialScaleColorString.range()();
+sequentialScaleColorString = sequentialScaleColorString.range(['#000000', '#ffffff']);
+
+// rangeRound(...) ----------------------------------------------------------------
+
+sequentialScaleColorString = sequentialScaleColorString.rangeRound([0, 1]);
+
 // (...) value mapping from domain to output -----------------------------------
 
 outputString = sequentialScaleColorString(10);
@@ -585,6 +659,84 @@ outputString = sequentialScaleColorString(10);
 // copy(...) -----------------------------------------------------------------
 
 const copiedSequentialScale: d3Scale.ScaleSequential<string> = sequentialScaleColorString.copy();
+
+// ScaleSequential Interface ========================================================
+
+// quantiles(...) -----------------------------------------------------------------
+
+const sequentialQuantileScale = d3Scale.scaleSequentialQuantile();
+const quantilesFromSequential: number[] = sequentialQuantileScale.quantiles();
+
+// -------------------------------------------------------------------------------
+// Diverging Scale Factory
+// -------------------------------------------------------------------------------
+
+// scaleQuantize() -----------------------------------------------------------------
+
+const interpolateDouble = (t: number) => t * 2;
+let divergingScaleNumber: d3Scale.ScaleDiverging<number>;
+let divergingScaleString: d3Scale.ScaleDiverging<string>;
+
+divergingScaleNumber = d3Scale.scaleDiverging();
+divergingScaleNumber = d3Scale.scaleDivergingLog();
+divergingScaleNumber = d3Scale.scaleDivergingPow();
+divergingScaleNumber = d3Scale.scaleDivergingSqrt();
+divergingScaleNumber = d3Scale.scaleDivergingSymlog();
+divergingScaleNumber = d3Scale.scaleDiverging(interpolateRound(0, 1));
+divergingScaleNumber = d3Scale.scaleDiverging(interpolateDouble);
+divergingScaleString = d3Scale.scaleDiverging<string>(interpolateSpectral);
+divergingScaleString = d3Scale.scaleDiverging<string>(['#000000', '#ffffff']);
+divergingScaleNumber = d3Scale.scaleDiverging<number>([0, 5, 10], interpolateRound(0, 1));
+
+// ScaleDiverging Interface =======================================================
+
+// (...) value mapping from domain to output -----------------------------------
+
+outputNumber = divergingScaleNumber(1);
+outputString = divergingScaleString(1);
+
+// domain(...) -----------------------------------------------------------------
+
+let domainDivergingScale: [number, number, number];
+
+divergingScaleNumber = divergingScaleNumber.domain([0, 0.5, 1]);
+divergingScaleNumber = divergingScaleNumber.domain([new NumCoercible(0), 0.5, new NumCoercible(1)]);
+domainDivergingScale = divergingScaleNumber.domain();
+
+divergingScaleString = divergingScaleString.domain([0, 0.5, 1]);
+divergingScaleString = divergingScaleString.domain([new NumCoercible(0), 0.5, new NumCoercible(1)]);
+domainDivergingScale = divergingScaleString.domain();
+
+// clamp(...) -----------------------------------------------------------------
+
+clampFlag = divergingScaleNumber.clamp();
+clampFlag = divergingScaleString.clamp();
+
+divergingScaleNumber = divergingScaleNumber.clamp(true);
+divergingScaleString = divergingScaleString.clamp(true);
+
+// interpolator(...) -----------------------------------------------------------------
+
+const inum: (t: number) => number = divergingScaleNumber.interpolator();
+const istr: (t: number) => string = divergingScaleString.interpolator();
+
+divergingScaleNumber = divergingScaleNumber.interpolator((t) => t + 2);
+divergingScaleNumber = divergingScaleNumber.interpolator(interpolateRound(2, 3));
+divergingScaleString = divergingScaleString.interpolator(sequentialInterpolator);
+
+// range(...) ----------------------------------------------------------------
+
+domainDivergingScale = divergingScaleNumber.range()();
+divergingScaleNumber = divergingScaleNumber.range([0, 0.5, 1]);
+
+// rangeRound(...) ----------------------------------------------------------------
+
+divergingScaleNumber = divergingScaleNumber.rangeRound([0, 0.5, 1]);
+
+// copy(...) -----------------------------------------------------------------
+
+const copiedDivergingScaleNumber: d3Scale.ScaleDiverging<number> = divergingScaleNumber.copy();
+const copiedDivergingScaleString: d3Scale.ScaleDiverging<string> = divergingScaleString.copy();
 
 // -------------------------------------------------------------------------------
 // Quantize Scale Factory
@@ -597,6 +749,7 @@ let quantizeScaleString: d3Scale.ScaleQuantize<string>;
 
 quantizeScaleNumber = d3Scale.scaleQuantize();
 quantizeScaleString = d3Scale.scaleQuantize<string>();
+quantizeScaleNumber = d3Scale.scaleQuantize([0, 5], [0, 5]);
 
 // ScaleQuantize Interface ========================================================
 
@@ -656,6 +809,7 @@ let quantileScaleString: d3Scale.ScaleQuantile<string>;
 
 quantileScaleNumber = d3Scale.scaleQuantile();
 quantileScaleString = d3Scale.scaleQuantile<string>();
+quantileScaleNumber = d3Scale.scaleQuantile([0, 5], [0, 5]);
 
 // ScaleQuantile Interface ========================================================
 
@@ -704,6 +858,7 @@ let thresholdScaleNumberString: d3Scale.ScaleThreshold<number, string>;
 
 thresholdScaleNumberNumber = d3Scale.scaleThreshold();
 thresholdScaleNumberString = d3Scale.scaleThreshold<number, string>();
+thresholdScaleNumberString = d3Scale.scaleThreshold<number, string>([0, 5], ['test']);
 
 // ScaleThreshold Interface ========================================================
 
@@ -751,6 +906,7 @@ ordinalScaleStringString = d3Scale.scaleOrdinal<string>();
 ordinalScaleStringString = d3Scale.scaleOrdinal<string>(schemePuRd[3]);
 ordinalScaleStringNumber = d3Scale.scaleOrdinal<string, number>();
 ordinalScaleStringString = d3Scale.scaleOrdinal<string, string>(schemePuRd[3]);
+ordinalScaleStringString = d3Scale.scaleOrdinal(schemePuRd[3], schemePuRd[3]);
 
 // ScaleOrdinal Interface ========================================================
 
@@ -788,9 +944,9 @@ if (typeof unknownValue === 'string') {
 
 // (...) value mapping from domain to output -----------------------------------
 
-outputString = ordinalScaleStringString('neutral');
+const ordinalOutputString: string = ordinalScaleStringString('neutral');
 
-outputNumber = ordinalScaleStringNumber('negative');
+const ordinalOutputNumber: number = ordinalScaleStringNumber('negative');
 
 // copy(...) -----------------------------------------------------------------
 
@@ -807,6 +963,7 @@ let bandScaleCoercible: d3Scale.ScaleBand<StringCoercible>;
 
 bandScaleString = d3Scale.scaleBand();
 bandScaleCoercible = d3Scale.scaleBand<StringCoercible>();
+bandScaleString = d3Scale.scaleBand(['test'], [0, 5]);
 
 // ScaleBand Interface ========================================================
 
@@ -883,6 +1040,7 @@ let pointScaleCoercible: d3Scale.ScalePoint<StringCoercible>;
 
 pointScaleString = d3Scale.scalePoint();
 pointScaleCoercible = d3Scale.scalePoint<StringCoercible>();
+pointScaleString = d3Scale.scalePoint(['test'], [0, 5]);
 
 // ScalePoint Interface ========================================================
 

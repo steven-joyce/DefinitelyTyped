@@ -1,96 +1,114 @@
 // Type definitions for jsreport-core 1.5
 // Project: http://jsreport.net
 // Definitions by: taoqf <https://github.com/taoqf>
+//                 pofider <https://github.com/pofider>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // TypeScript Version: 2.3
 
 /// <reference types="node" />
-import { Buffer } from 'buffer';
-import { Readable } from 'stream';
 
 declare namespace JsReport {
-	type helpers = string | { [fun: string]: (...args: any[]) => any };
+    type Helpers = string | { [fun: string]: (...args: any[]) => any };
 
-	interface RenderOptions {
-		template: {
-			content: string;
-			engine: 'jsrender' | 'handlebars' | 'ejs' | 'jade' | string;
-			helpers?: helpers;
-			recipe: 'phantom-pdf' | 'electron-pdf' | 'text' | 'xlsx' | 'html-to-xlsx' | 'phantom-image' | 'html-to-text' | 'fop-pdf' | 'client-html' | 'wrapped-html' | 'wkhtmltopdf' | string;
-		};
-		data?: any;
-	}
+    type Engine = "none";
 
-	interface Report {
-		content: Buffer;
-		stream: Readable;
-		headers: {
-			[header: string]: string | number | boolean;
-		};
-	}
+    type Recipe = "html";
 
-	interface Request {
-		template: {
-			content: string;
-		};
-	}
+    interface Template {
+        content: string;
+        engine: Engine | string;
+        helpers: Helpers;
+        recipe: Recipe | string;
+    }
 
-	// interface Response {
-	// 	// todo
-	// }
+    interface Options {
+        preview?: boolean;
+    }
 
-	type Response = any;
+    interface Request {
+        template: Partial<Template>;
+        options?: Options;
+        data: any;
+    }
 
-	interface Listener {
-		add(type: string, callback: (req: Request, res: Response, err: any) => void): void;
-	}
+    interface Response {
+        content: Buffer;
+        stream: NodeJS.ReadableStream;
+        headers: {
+            [header: string]: string | number | boolean;
+        };
+    }
 
-	interface Logger {
-		add(logger: any, options?: {
-			level: 'debug' | 'info' | 'log' | 'warn' | 'error';
-		}): void;
-	}
+    interface ListenerCollection {
+        add(
+            type: string,
+            callback: (req: Request, res: Response, err?: any) => Promise<any> | void
+        ): void;
+    }
 
-	interface Collection {
-		find(query: {
-			[field: string]: any;
-		}): Promise<any>;
-	}
+    interface Collection {
+        find(query: { [field: string]: any }): Promise<object[]>;
+        update(query: { [field: string]: any }, update: object, options?: object): Promise<any>;
+        remove(query: { [field: string]: any }): Promise<any>;
+        insert(obj: object): Promise<object>;
+    }
 
-	interface DocumentStore {
-		collection(options: string): Collection;
-	}
+    interface DocumentStore {
+        collection(name: string): Collection;
+    }
 
-	interface JsReporter {
-		afterRenderListeners: Listener;
-		afterTemplatingEnginesExecutedListeners: Listener;
-		beforeRenderListeners: Listener;
-		documentStore: DocumentStore;
-		initializeListeners: Listener;
-		logger: Logger;
-		validateRenderListeners: Listener;
-		init(): Promise<void>;
-		render(options: RenderOptions): Promise<Report>;
-		use(extension: any): any;
-	}
+    type Extension = (reporter: Reporter, definition: object) => void;
+
+    interface ExtensionDefinition {
+        options: any;
+        main: any;
+        directory: string;
+    }
+
+    interface Reporter {
+        use(extension: Extension | ExtensionDefinition): Reporter;
+    }
+
+    interface Reporter {
+        afterRenderListeners: ListenerCollection;
+        afterTemplatingEnginesExecutedListeners: ListenerCollection;
+        beforeRenderListeners: ListenerCollection;
+        documentStore: DocumentStore;
+        initializeListeners: ListenerCollection;
+        // it would be nice to add winston.LoggerInstance here
+        // however adding import winston = require('winston') breaks exported enums
+        logger: any;
+        validateRenderListeners: ListenerCollection;
+        version: string;
+        init(): Promise<Reporter>;
+        render(options: Partial<Request>): Promise<Response>;
+        discover(): Reporter;
+        createListenerCollection(): ListenerCollection;
+        close(): Promise<void>;
+    }
+
+    interface Configuration {
+        autoTempCleanup: boolean;
+        dataDirectory: string;
+        extensionsLocationCache: boolean;
+        loadConfig: boolean;
+        logger: {
+            silent: boolean;
+        };
+        rootDirectory: string;
+        scripts: {
+            allowedModules: string[];
+        };
+        tasks: Partial<{
+            allowedModules: string[] | string;
+            strategy: "dedicated-process" | "http-server" | "in-process" | string;
+        }>;
+        tempDirectory: string;
+    }
 }
 
-declare function JsReport(options?: Partial<{
-	autoTempCleanup: boolean;
-	dataDirectory: string;
-	extensionsLocationCache: boolean;
-	loadConfig: boolean;
-	logger: {
-		silent: boolean;
-	};
-	rootDirectory: string;
-	scripts: {
-		allowedModules: string[];
-	};
-	tasks: {
-		[task: string]: any;
-	};
-	tempDirectory: string;
-}>): JsReport.JsReporter;
+declare function JsReport(
+    config?: Partial<JsReport.Configuration>
+): JsReport.Reporter;
 
 export = JsReport;

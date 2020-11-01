@@ -3,22 +3,21 @@
 /* Build new ShopifyBuy client
 ============================================================ */
 let client = ShopifyBuy.buildClient({
-    apiKey: 'bf081e860bc9dc1ce0654fdfbc20892d',
-    domain: 'embeds',
-    appId: '6'
+    domain: 'buyapitypestest.myshopify.com',
+    storefrontAccessToken: '9f30a6806b613e0cb551b7db59c5ca02'
 });
 
-var product : ShopifyBuy.Shopify.ProductModel;
-var cart : ShopifyBuy.Shopify.CartModel;
+var product : ShopifyBuy.Product;
+var cart : ShopifyBuy.Cart;
 var cartLineItemCount : number;
 if(localStorage.getItem('lastCartId')) {
-    client.fetchCart(localStorage.getItem('lastCartId')).then(function(remoteCart : ShopifyBuy.Shopify.CartModel) {
+    client.checkout.fetch(localStorage.getItem('lastCartId')).then(function(remoteCart : ShopifyBuy.Cart) {
         cart = remoteCart;
         cartLineItemCount = cart.lineItems.length;
         renderCartItems();
     });
 } else {
-    client.createCart().then(function (newCart : ShopifyBuy.Shopify.CartModel) {
+    client.checkout.create().then(function (newCart : ShopifyBuy.Cart) {
         cart = newCart;
         localStorage.setItem('lastCartId', ""+cart.id);
         cartLineItemCount = 0;
@@ -29,11 +28,11 @@ var previousFocusItem : any;
 
 /* Fetch product and init
 ============================================================ */
-client.fetchProduct('3614436099').then(function (fetchedProduct : ShopifyBuy.Shopify.ProductModel) {
+client.product.fetch('3614436099').then(function (fetchedProduct : ShopifyBuy.Product) {
     product = fetchedProduct;
-    var selectedVariant : ShopifyBuy.Shopify.ProductVariantModel = product.selectedVariant;
+    var selectedVariant : ShopifyBuy.ProductVariant = product.selectedVariant;
     var selectedVariantImage : any = product.selectedVariantImage;
-    var currentOptions : ShopifyBuy.Shopify.ProductOptionModel[] = product.options;
+    var currentOptions : ShopifyBuy.Option[] = product.options;
 
     var variantSelectors = generateSelectors(product);
     $('.variant-selectors').html(""+variantSelectors);
@@ -49,8 +48,8 @@ client.fetchProduct('3614436099').then(function (fetchedProduct : ShopifyBuy.Sho
 
 /* Generate DOM elements for variant selectors
 ============================================================ */
-function generateSelectors(product : ShopifyBuy.Shopify.ProductModel) {
-    var elements = product.options.map(function(option : ShopifyBuy.Shopify.ProductOptionModel) {
+function generateSelectors(product : ShopifyBuy.Product) {
+    var elements = product.options.map(function(option : ShopifyBuy.Option) {
         var optionsHtml = option.values.map(function(value : any) {
             return '<option value="' + value + '">' + value + '</option>';
         });
@@ -121,16 +120,16 @@ function bindEventListeners() {
 
 /* Variant option change handler
 ============================================================ */
-function attachOnVariantSelectListeners(product : ShopifyBuy.Shopify.ProductModel) {
+function attachOnVariantSelectListeners(product : ShopifyBuy.Product) {
     $('.variant-selectors').on('change', 'select', function(event) {
         var $element : any = $(event.target);
         var name : string = $element.attr('name');
         var value : string = $element.val();
-        product.options.filter(function(option : ShopifyBuy.Shopify.ProductOptionModel) {
+        product.options.filter(function(option : ShopifyBuy.Option) {
             return option.name === name;
         })[0].selected = value;
 
-        var selectedVariant : ShopifyBuy.Shopify.ProductVariantModel = product.selectedVariant;
+        var selectedVariant : ShopifyBuy.ProductVariant = product.selectedVariant;
         var selectedVariantImage : any = product.selectedVariantImage;
         updateProductTitle(product.title);
         updateVariantImage(selectedVariantImage);
@@ -155,13 +154,13 @@ function updateVariantImage(image : any) {
 
 /* Update product variant title based on selected variant
 ============================================================ */
-function updateVariantTitle(variant : ShopifyBuy.Shopify.ProductVariantModel) {
+function updateVariantTitle(variant : ShopifyBuy.ProductVariant) {
     $('#buy-button-1 .variant-title').text(variant.title);
 }
 
 /* Update product variant price based on selected variant
 ============================================================ */
-function updateVariantPrice(variant : ShopifyBuy.Shopify.ProductVariantModel) {
+function updateVariantPrice(variant : ShopifyBuy.ProductVariant) {
     $('#buy-button-1 .variant-price').text('$' + variant.price);
 }
 
@@ -171,7 +170,7 @@ function buyButtonClickHandler(evt : any) {
     evt.preventDefault();
     var id : string | number = product.selectedVariant.id;
     var quantity : number;
-    var cartLineItem : ShopifyBuy.Shopify.CartLineItemModel = findCartItemByVariantId(id);
+    var cartLineItem : ShopifyBuy.LineItem = findCartItemByVariantId(id);
 
     quantity = cartLineItem ? cartLineItem.quantity + 1 : 1;
 
@@ -183,11 +182,11 @@ function buyButtonClickHandler(evt : any) {
 /* Update product variant quantity in cart
 ============================================================ */
 function updateQuantity(fn : Function, variantId : string | number) {
-    var variant : ShopifyBuy.Shopify.ProductVariantModel = product.variants.filter(function (variant : ShopifyBuy.Shopify.ProductVariantModel) {
+    var variant : ShopifyBuy.ProductVariant = product.variants.filter(function (variant : ShopifyBuy.ProductVariant) {
         return (variant.id === variantId);
     })[0];
     var quantity : number;
-    var cartLineItem : ShopifyBuy.Shopify.CartLineItemModel = findCartItemByVariantId(variant.id);
+    var cartLineItem : ShopifyBuy.LineItem = findCartItemByVariantId(variant.id);
     if (cartLineItem) {
         quantity = fn(cartLineItem.quantity);
         updateVariantInCart(cartLineItem, quantity);
@@ -214,10 +213,10 @@ function incrementQuantity(variantId : string | number) {
 ============================================================ */
 function fieldQuantityHandler(evt : any) {
     var variantId : string | number = parseInt($(this).closest('.cart-item').attr('data-variant-id'), 10);
-    var variant : ShopifyBuy.Shopify.ProductVariantModel = product.variants.filter(function (variant : ShopifyBuy.Shopify.ProductVariantModel) {
+    var variant : ShopifyBuy.ProductVariant = product.variants.filter(function (variant : ShopifyBuy.ProductVariant) {
         return (variant.id === variantId);
     })[0];
-    var cartLineItem : ShopifyBuy.Shopify.CartLineItemModel = findCartItemByVariantId(variant.id);
+    var cartLineItem : ShopifyBuy.LineItem = findCartItemByVariantId(variant.id);
     var quantity : number = evt.target.value;
     if (cartLineItem) {
         updateVariantInCart(cartLineItem, quantity);
@@ -258,15 +257,15 @@ function closeCart() {
 ============================================================ */
 function findCartItemByVariantId(variantId : string | number) {
     return cart.lineItems.filter(function (item) {
-        return (item.variant_id === variantId);
+        return (item.variantId === variantId);
     })[0];
 }
 
 /* Determine action for variant adding/updating/removing
 ============================================================ */
-function addOrUpdateVariant(variant : ShopifyBuy.Shopify.ProductVariantModel, quantity : number) {
+function addOrUpdateVariant(variant : ShopifyBuy.ProductVariant, quantity : number) {
     openCart();
-    var cartLineItem : ShopifyBuy.Shopify.CartLineItemModel = findCartItemByVariantId(variant.id);
+    var cartLineItem : ShopifyBuy.LineItem = findCartItemByVariantId(variant.id);
 
     if (cartLineItem) {
         updateVariantInCart(cartLineItem, quantity);
@@ -279,14 +278,18 @@ function addOrUpdateVariant(variant : ShopifyBuy.Shopify.ProductVariantModel, qu
 
 /* Update details for item already in cart. Remove if necessary
 ============================================================ */
-function updateVariantInCart(cartLineItem : ShopifyBuy.Shopify.CartLineItemModel, quantity : number) {
-    var variantId : string | number = cartLineItem.variant_id;
+function updateVariantInCart(cartLineItem : ShopifyBuy.LineItem, quantity : number) {
+    var variantId : string | number = cartLineItem.variantId;
     var cartLength : number = cart.lineItems.length;
-    cart.updateLineItem(cartLineItem.id, quantity).then(function(updatedCart : ShopifyBuy.Shopify.CartModel) {
+    let lineItemVariant: ShopifyBuy.AttributeInput = {
+        id: cartLineItem.id,
+        quantity
+    };
+    client.checkout.updateLineItem(cartLineItem.id, [lineItemVariant]).then(function(updatedCart : ShopifyBuy.Cart) {
         var $cartItem = $('.cart').find('.cart-item[data-variant-id="' + variantId + '"]');
         if (updatedCart.lineItems.length >= cartLength) {
             $cartItem.find('.cart-item__quantity').val(cartLineItem.quantity);
-            $cartItem.find('.cart-item__price').text(formatAsMoney(cartLineItem.line_price));
+            $cartItem.find('.cart-item__price').text(formatAsMoney(cartLineItem.linePrice));
         } else {
             $cartItem.addClass('js-hidden').bind('transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd', function() {
                 $cartItem.remove();
@@ -306,12 +309,12 @@ function updateVariantInCart(cartLineItem : ShopifyBuy.Shopify.CartLineItemModel
 
 /* Add 'quantity' amount of product 'variant' to cart
 ============================================================ */
-function addVariantToCart(variant : ShopifyBuy.Shopify.ProductVariantModel, quantity : number) {
+function addVariantToCart(variant : ShopifyBuy.ProductVariant, quantity : number) {
     openCart();
 
-    cart.addVariants({ variant: variant, quantity: quantity }).then(function() {
-        var cartItem : ShopifyBuy.Shopify.CartLineItemModel = cart.lineItems.filter(function (item : ShopifyBuy.Shopify.CartLineItemModel ) {
-            return (item.variant_id === variant.id);
+    client.checkout.addVariants({ variant: variant, quantity: quantity }).then(function() {
+        var cartItem : ShopifyBuy.LineItem = cart.lineItems.filter(function (item : ShopifyBuy.LineItem ) {
+            return (item.variantId === variant.id);
         })[0];
         var $cartItem = renderCartItem(cartItem);
         var $cartItemContainer = $('.cart-item-container');
@@ -331,19 +334,19 @@ function addVariantToCart(variant : ShopifyBuy.Shopify.ProductVariantModel, quan
 
 /* Return required markup for single item rendering
 ============================================================ */
-function renderCartItem(lineItem : ShopifyBuy.Shopify.CartLineItemModel) {
+function renderCartItem(lineItem : ShopifyBuy.LineItem) {
     var lineItemEmptyTemplate = $('#CartItemTemplate').html();
     var $lineItemTemplate = $(lineItemEmptyTemplate);
     var itemImage = lineItem.image.src;
-    $lineItemTemplate.attr('data-variant-id', lineItem.variant_id);
+    $lineItemTemplate.attr('data-variant-id', lineItem.variantId);
     $lineItemTemplate.addClass('js-hidden');
     $lineItemTemplate.find('.cart-item__img').css('background-image', 'url(' + itemImage + ')');
     $lineItemTemplate.find('.cart-item__title').text(lineItem.title);
-    $lineItemTemplate.find('.cart-item__variant-title').text(lineItem.variant_title);
-    $lineItemTemplate.find('.cart-item__price').text(formatAsMoney(lineItem.line_price));
+    $lineItemTemplate.find('.cart-item__variant-title').text(lineItem.variantTitle);
+    $lineItemTemplate.find('.cart-item__price').text(formatAsMoney(lineItem.linePrice));
     $lineItemTemplate.find('.cart-item__quantity').attr('value', lineItem.quantity);
-    $lineItemTemplate.find('.quantity-decrement').attr('data-variant-id', lineItem.variant_id);
-    $lineItemTemplate.find('.quantity-increment').attr('data-variant-id', lineItem.variant_id);
+    $lineItemTemplate.find('.quantity-decrement').attr('data-variant-id', lineItem.variantId);
+    $lineItemTemplate.find('.quantity-increment').attr('data-variant-id', lineItem.variantId);
 
     return $lineItemTemplate;
 }
@@ -368,7 +371,7 @@ function renderCartItems() {
 /* Update Total Cart Pricing
 ============================================================ */
 function updateTotalCartPricing() {
-    $('.cart .pricing').text(formatAsMoney(cart.subtotal));
+    $('.cart .pricing').text(formatAsMoney(cart.subtotalPrice));
 }
 
 /* Format amount as currency
@@ -400,6 +403,6 @@ function updateCartTabButton() {
 
 /* Set previously focused item for escape handler
 ============================================================ */
-function setPreviousFocusItem(item : ShopifyBuy.Shopify.CartLineItemModel) {
+function setPreviousFocusItem(item : ShopifyBuy.LineItem) {
     previousFocusItem = item;
 }

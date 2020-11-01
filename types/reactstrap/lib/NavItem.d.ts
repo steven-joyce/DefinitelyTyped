@@ -1,10 +1,12 @@
+import * as React from 'react';
 import { CSSModule } from '../index';
 
 export interface NavItemProps extends React.HTMLAttributes<HTMLElement> {
-  tag?: React.ReactType;
-  className?: string;
-  cssModule?: CSSModule;
+    [key: string]: any;
+    tag?: React.ElementType;
+    active?: boolean;
+    cssModule?: CSSModule;
 }
 
-declare const NavItem: React.StatelessComponent<NavItemProps>;
+declare class NavItem<T = {[key: string]: any}> extends React.Component<NavItemProps> {}
 export default NavItem;

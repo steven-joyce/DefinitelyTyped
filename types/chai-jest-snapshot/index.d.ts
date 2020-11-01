@@ -2,6 +2,7 @@
 // Project: https://github.com/suchipi/chai-jest-snapshot#readme
 // Definitions by: Matt Perry <https://github.com/mattvperry>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
+// TypeScript Version: 3.0
 
 /// <reference types="chai" />
 /// <reference types="mocha" />
@@ -16,10 +17,7 @@ declare global {
     }
 }
 
-interface ChaiJestSnapshot {
-    /** Chai bootstrapper */
-    (chai: any, utils: any): void;
-
+interface ChaiJestSnapshot extends Chai.ChaiPlugin {
     /** Set snapshot file name */
     setFilename(filename: string): void;
 
@@ -29,7 +27,7 @@ interface ChaiJestSnapshot {
     setTestName(testname: string): void;
 
     /** Configure snapshot name using mocha context */
-    configureUsingMochaContext(context: Mocha.IBeforeAndAfterContext): void;
+    configureUsingMochaContext(context: Mocha.Context): void;
 
     /** Reset snapshot registry */
     resetSnapshotRegistry(): void;
@@ -39,4 +37,4 @@ interface ChaiJestSnapshot {
 }
 
 declare var ChaiJestSnapshot: ChaiJestSnapshot;
-export default ChaiJestSnapshot;
+export = ChaiJestSnapshot;

@@ -1,10 +1,14 @@
-// Type definitions for D3JS d3-geo module 1.9
-// Project: https://github.com/d3/d3-geo/
-// Definitions by: Hugues Stefanski <https://github.com/Ledragon>, Tom Wanzek <https://github.com/tomwanzek>, Alex Ford <https://github.com/gustavderdrache>, Boris Yankov <https://github.com/borisyankov>
+// Type definitions for D3JS d3-geo module 2.0
+// Project: https://github.com/d3/d3-geo/, https://d3js.org/d3-geo
+// Definitions by: Hugues Stefanski <https://github.com/ledragon>
+//                 Tom Wanzek <https://github.com/tomwanzek>
+//                 Alex Ford <https://github.com/gustavderdrache>
+//                 Boris Yankov <https://github.com/borisyankov>
+//                 Nathan Bierema <https://github.com/Methuselah96>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // TypeScript Version: 2.3
 
-// Last module patch version validated against: 1.9.0
+// Last module patch version validated against: 2.0.1
 
 import * as GeoJSON from 'geojson';
 
@@ -31,9 +35,11 @@ export type GeoGeometryObjects = GeoJSON.GeometryObject | GeoSphere;
 
 /**
  * A GeoJSON-style GeometryCollection which supports GeoJSON geometry objects
- * and additionally GeoSphere
+ * and additionally GeoSphere.
+ *
+ * The generic refers to the type(s) of d3-geo geometry objects contained in the collection.
  */
-export interface ExtendedGeometryCollection<GeometryType extends GeoGeometryObjects> {
+export interface ExtendedGeometryCollection<GeometryType extends GeoGeometryObjects = GeoGeometryObjects> {
     type: string;
     bbox?: number[];
     crs?: {
@@ -45,9 +51,18 @@ export interface ExtendedGeometryCollection<GeometryType extends GeoGeometryObje
 
 /**
  * A GeoJSON-style Feature which support features built on GeoJSON GeometryObjects
- * or GeoSphere
+ * or GeoSphere.
+ *
+ * The first generic refers to the type(s) of d3-geo geometry objects underlying the ExtendedFeature.
+ * Unless explicitly ruled out, the geometry value is nullable.
+ *
+ * The second generic refers to the data type of the properties of the ExtendedFeature. Unless explicitly ruled out,
+ * the properties value is nullable.
  */
-export interface ExtendedFeature<GeometryType extends GeoGeometryObjects, Properties> extends GeoJSON.GeoJsonObject {
+export interface ExtendedFeature<
+    GeometryType extends GeoGeometryObjects | null = GeoGeometryObjects | null,
+    Properties extends GeoJSON.GeoJsonProperties = GeoJSON.GeoJsonProperties
+    > extends GeoJSON.GeoJsonObject {
     geometry: GeometryType;
     properties: Properties;
     id?: string | number;
@@ -56,8 +71,10 @@ export interface ExtendedFeature<GeometryType extends GeoGeometryObjects, Proper
 /**
  * A GeoJSON-style FeatureCollection which supports GeoJSON features
  * and features built on GeoSphere
+ *
+ * The generic refers to the type of ExtendedFeature contained in the ExtendedFeatureCollection.
  */
-export interface ExtendedFeatureCollection<FeatureType extends ExtendedFeature<GeoGeometryObjects, any>> extends GeoJSON.GeoJsonObject {
+export interface ExtendedFeatureCollection<FeatureType extends ExtendedFeature = ExtendedFeature> extends GeoJSON.GeoJsonObject {
     features: FeatureType[];
 }
 
@@ -65,8 +82,7 @@ export interface ExtendedFeatureCollection<FeatureType extends ExtendedFeature<G
  * Type Alias for permissible objects which can be used with d3-geo
  * methods
  */
-export type GeoPermissibleObjects = GeoGeometryObjects | ExtendedGeometryCollection<GeoGeometryObjects>
-    | ExtendedFeature<GeoGeometryObjects, any> | ExtendedFeatureCollection<ExtendedFeature<GeoGeometryObjects, any>>;
+export type GeoPermissibleObjects = GeoGeometryObjects | ExtendedGeometryCollection | ExtendedFeature | ExtendedFeatureCollection;
 
 // ----------------------------------------------------------------------
 // Spherical Math
@@ -78,14 +94,14 @@ export type GeoPermissibleObjects = GeoGeometryObjects | ExtendedGeometryCollect
  *
  * @param object A geographic feature supported by d3-geo (An extension of GeoJSON feature).
  */
-export function geoArea(object: ExtendedFeature<GeoGeometryObjects, any>): number;
+export function geoArea(object: ExtendedFeature): number;
 /**
  * Returns the spherical area of the specified feature collection in steradians.
  * This is the spherical equivalent of path.area.
  *
  * @param object A geographic feature collection supported by d3-geo (An extension of GeoJSON feature).
  */
-export function geoArea(object: ExtendedFeatureCollection<ExtendedFeature<GeoGeometryObjects, any>>): number;
+export function geoArea(object: ExtendedFeatureCollection): number;
 /**
  * Returns the spherical area of the specified GeoJson Geometry Object or GeoSphere object in steradians.
  * This is the spherical equivalent of path.area.
@@ -99,7 +115,7 @@ export function geoArea(object: GeoGeometryObjects): number;
  *
  * @param object A geographic geometry collection supported by d3-geo (An extension of GeoJSON geometry collection).
  */
-export function geoArea(object: ExtendedGeometryCollection<GeoGeometryObjects>): number;
+export function geoArea(object: ExtendedGeometryCollection): number;
 
 /**
  * Returns the spherical bounding box for the specified feature. The bounding box is represented by a two-dimensional array: [[left, bottom], [right, top]],
@@ -109,7 +125,7 @@ export function geoArea(object: ExtendedGeometryCollection<GeoGeometryObjects>):
  *
  * @param object A geographic feature supported by d3-geo (An extension of GeoJSON feature).
  */
-export function geoBounds(object: ExtendedFeature<GeoGeometryObjects, any>): [[number, number], [number, number]];
+export function geoBounds(object: ExtendedFeature): [[number, number], [number, number]];
 /**
  * Returns the spherical bounding box for the specified feature collection. The bounding box is represented by a two-dimensional array: [[left, bottom], [right, top]],
  * where left is the minimum longitude, bottom is the minimum latitude, right is maximum longitude, and top is the maximum latitude. All coordinates are given in degrees.
@@ -118,7 +134,7 @@ export function geoBounds(object: ExtendedFeature<GeoGeometryObjects, any>): [[n
  *
  * @param object A geographic feature collection supported by d3-geo (An extension of GeoJSON feature).
  */
-export function geoBounds(object: ExtendedFeatureCollection<ExtendedFeature<GeoGeometryObjects, any>>): [[number, number], [number, number]];
+export function geoBounds(object: ExtendedFeatureCollection): [[number, number], [number, number]];
 /**
  * Returns the spherical bounding box for the specified GeoJson Geometry Object or GeoSphere object. The bounding box is represented by a two-dimensional array: [[left, bottom], [right, top]],
  * where left is the minimum longitude, bottom is the minimum latitude, right is maximum longitude, and top is the maximum latitude. All coordinates are given in degrees.
@@ -136,7 +152,7 @@ export function geoBounds(object: GeoGeometryObjects): [[number, number], [numbe
  *
  * @param object A geographic geometry collection supported by d3-geo (An extension of GeoJSON geometry collection).
  */
-export function geoBounds(object: ExtendedGeometryCollection<GeoGeometryObjects>): [[number, number], [number, number]];
+export function geoBounds(object: ExtendedGeometryCollection): [[number, number], [number, number]];
 
 /**
  * Returns the spherical centroid of the specified feature in steradians.
@@ -144,14 +160,14 @@ export function geoBounds(object: ExtendedGeometryCollection<GeoGeometryObjects>
  *
  * @param object A geographic feature supported by d3-geo (An extension of GeoJSON feature).
  */
-export function geoCentroid(object: ExtendedFeature<GeoGeometryObjects, any>): [number, number];
+export function geoCentroid(object: ExtendedFeature): [number, number];
 /**
  * Returns the spherical centroid of the specified feature collection in steradians.
  * This is the spherical equivalent of path.centroid.
  *
  * @param object A geographic feature collection supported by d3-geo (An extension of GeoJSON feature).
  */
-export function geoCentroid(object: ExtendedFeatureCollection<ExtendedFeature<GeoGeometryObjects, any>>): [number, number];
+export function geoCentroid(object: ExtendedFeatureCollection): [number, number];
 /**
  * Returns the spherical centroid of the specified GeoJson Geometry Object or GeoSphere object in steradians.
  * This is the spherical equivalent of path.centroid.
@@ -165,7 +181,7 @@ export function geoCentroid(object: GeoGeometryObjects): [number, number];
  *
  * @param object A geographic geometry collection supported by d3-geo (An extension of GeoJSON geometry collection).
  */
-export function geoCentroid(object: ExtendedGeometryCollection<GeoGeometryObjects>): [number, number];
+export function geoCentroid(object: ExtendedGeometryCollection): [number, number];
 
 /**
  * Returns true if and only if the specified GeoJSON object contains the specified point, or false if the object does not contain the point.
@@ -175,7 +191,7 @@ export function geoCentroid(object: ExtendedGeometryCollection<GeoGeometryObject
  * @param object A geographic feature supported by d3-geo (An extension of GeoJSON feature).
  * @param point Point specified as a two-element array [longitude, latitude] in degrees.
  */
-export function geoContains(object: ExtendedFeature<GeoGeometryObjects, any>, point: [number, number]): boolean;
+export function geoContains(object: ExtendedFeature, point: [number, number]): boolean;
 /**
  * Returns true if and only if the specified GeoJSON object contains the specified point, or false if the object does not contain the point.
  * The point must be specified as a two-element array [longitude, latitude] in degrees. For Point and MultiPoint geometries, an exact test is used;
@@ -184,7 +200,7 @@ export function geoContains(object: ExtendedFeature<GeoGeometryObjects, any>, po
  * @param object A geographic feature collection supported by d3-geo (An extension of GeoJSON feature).
  * @param point Point specified as a two-element array [longitude, latitude] in degrees.
  */
-export function geoContains(object: ExtendedFeatureCollection<ExtendedFeature<GeoGeometryObjects, any>>, point: [number, number]): boolean;
+export function geoContains(object: ExtendedFeatureCollection, point: [number, number]): boolean;
 /**
  * Returns true if and only if the specified GeoJSON object contains the specified point, or false if the object does not contain the point.
  * The point must be specified as a two-element array [longitude, latitude] in degrees. For Point and MultiPoint geometries, an exact test is used;
@@ -202,7 +218,7 @@ export function geoContains(object: GeoGeometryObjects, point: [number, number])
  * @param object A geographic geometry collection supported by d3-geo (An extension of GeoJSON geometry collection).
  * @param point Point specified as a two-element array [longitude, latitude] in degrees.
  */
-export function geoContains(object: ExtendedGeometryCollection<GeoGeometryObjects>, point: [number, number]): boolean;
+export function geoContains(object: ExtendedGeometryCollection, point: [number, number]): boolean;
 
 /**
  * Returns the great-arc distance in radians between the two points a and b.
@@ -219,14 +235,14 @@ export function geoDistance(a: [number, number], b: [number, number]): number;
  *
  * @param object A geographic feature supported by d3-geo (An extension of GeoJSON feature).
  */
-export function geoLength(object: ExtendedFeature<GeoGeometryObjects, any>): number;
+export function geoLength(object: ExtendedFeature): number;
 /**
  * Returns the great-arc length of the specified feature collection in radians. For polygons, returns the perimeter of the exterior ring plus that of any interior rings.
  * This is the spherical equivalent of path.measure.
  *
  * @param object A geographic feature collection supported by d3-geo (An extension of GeoJSON feature).
  */
-export function geoLength(object: ExtendedFeatureCollection<ExtendedFeature<GeoGeometryObjects, any>>): number;
+export function geoLength(object: ExtendedFeatureCollection): number;
 /**
  * Returns the great-arc length of the specified GeoJson Geometry Object or GeoSphere object in radians. For polygons, returns the perimeter of the exterior ring plus that of any interior rings.
  * This is the spherical equivalent of path.measure.
@@ -240,7 +256,7 @@ export function geoLength(object: GeoGeometryObjects): number;
  *
  * @param object A geographic geometry collection supported by d3-geo (An extension of GeoJSON geometry collection).
  */
-export function geoLength(object: ExtendedGeometryCollection<GeoGeometryObjects>): number;
+export function geoLength(object: ExtendedGeometryCollection): number;
 
 /**
  * Returns an interpolator function given two points a and b.
@@ -291,7 +307,7 @@ export function geoRotation(angles: [number, number] | [number, number, number])
  *
  * The second generic corresponds to the type of the Datum which will be passed into the geo circle generator.
  */
-export interface GeoCircleGenerator<This, Datum> {
+export interface GeoCircleGenerator<This = any, Datum = any> {
     /**
      * Returns a new GeoJSON geometry object of type “Polygon” approximating a circle on the surface of a sphere,
      * with the current center, radius and precision. Any arguments are passed to the accessors.
@@ -362,7 +378,7 @@ export interface GeoCircleGenerator<This, Datum> {
 /**
  * Returns a new geo circle generator
  */
-export function geoCircle(): GeoCircleGenerator<any, any>;
+export function geoCircle(): GeoCircleGenerator;
 /**
  * Returns a new geo circle generator
  *
@@ -547,7 +563,7 @@ export interface GeoStream {
  * @param object A geographic feature supported by d3-geo (An extension of GeoJSON feature).
  * @param stream A projection stream.
  */
-export function geoStream(object: ExtendedFeature<GeoGeometryObjects, any>, stream: GeoStream): void;
+export function geoStream(object: ExtendedFeature, stream: GeoStream): void;
 
 /**
  * Streams the specified GeoJSON object to the specified projection stream. While both features and geometry objects are supported as input,
@@ -556,7 +572,7 @@ export function geoStream(object: ExtendedFeature<GeoGeometryObjects, any>, stre
  * @param object A geographic feature collection supported by d3-geo (An extension of GeoJSON feature).
  * @param stream A projection stream.
  */
-export function geoStream(object: ExtendedFeatureCollection<ExtendedFeature<GeoGeometryObjects, any>>, stream: GeoStream): void;
+export function geoStream(object: ExtendedFeatureCollection, stream: GeoStream): void;
 
 /**
  * Streams the specified GeoJSON object to the specified projection stream. While both features and geometry objects are supported as input,
@@ -574,7 +590,7 @@ export function geoStream(object: GeoGeometryObjects, stream: GeoStream): void;
  * @param object A geographic geometry collection supported by d3-geo (An extension of GeoJSON geometry collection).
  * @param stream A projection stream.
  */
-export function geoStream(object: ExtendedGeometryCollection<GeoGeometryObjects>, stream: GeoStream): void;
+export function geoStream(object: ExtendedGeometryCollection, stream: GeoStream): void;
 
 // ----------------------------------------------------------------------
 // Projections
@@ -637,17 +653,12 @@ export interface GeoProjection extends GeoStreamWrapper {
     (point: [number, number]): [number, number] | null;
 
     /**
-     * Returns the current center of the projection, which defaults to ⟨0°,0°⟩.
-     */
-    center(): [number, number];
-    /**
-     * Sets the projection’s center to the specified center,
-     * a two-element array of longitude and latitude in degrees and returns the projection.
-     * The default is ⟨0°,0°⟩.
+     * Returns a new array [longitude, latitude] in degrees representing the unprojected point of the given projected point.
+     * May return null if the specified point has no defined projected position, such as when the point is outside the clipping bounds of the projection.
      *
-     * @param point A point specified as a two-dimensional array [longitude, latitude] in degrees.
+     * @param point The projected point, specified as a two-element array [x, y] (typically in pixels).
      */
-    center(point: [number, number]): this;
+    invert?(point: [number, number]): [number, number] | null;
 
     /**
      * Returns the current spherical clipping function.
@@ -728,180 +739,6 @@ export interface GeoProjection extends GeoStreamWrapper {
     clipExtent(extent: [[number, number], [number, number]]): this;
 
     /**
-     * Sets the projection’s scale and translate to fit the specified geographic feature in the center of the given extent.
-     * Returns the projection.
-     *
-     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
-     *
-     * @param extent The extent, specified as an array [[x₀, y₀], [x₁, y₁]], where x₀ is the left side of the bounding box, y₀ is the top, x₁ is the right and y₁ is the bottom.
-     * @param object A geographic feature supported by d3-geo (An extension of GeoJSON feature).
-     */
-    fitExtent(extent: [[number, number], [number, number]], object: ExtendedFeature<GeoGeometryObjects, any>): this;
-    /**
-     * Sets the projection’s scale and translate to fit the specified geographic feature collection in the center of the given extent.
-     * Returns the projection.
-     *
-     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
-     *
-     * @param extent The extent, specified as an array [[x₀, y₀], [x₁, y₁]], where x₀ is the left side of the bounding box, y₀ is the top, x₁ is the right and y₁ is the bottom.
-     * @param object A geographic feature collection supported by d3-geo (An extension of GeoJSON feature collection).
-     */
-    fitExtent(extent: [[number, number], [number, number]], object: ExtendedFeatureCollection<ExtendedFeature<GeoGeometryObjects, any>>): this;
-    /**
-     * Sets the projection’s scale and translate to fit the specified geographic geometry object in the center of the given extent.
-     * Returns the projection.
-     *
-     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
-     *
-     * @param extent The extent, specified as an array [[x₀, y₀], [x₁, y₁]], where x₀ is the left side of the bounding box, y₀ is the top, x₁ is the right and y₁ is the bottom.
-     * @param object A GeoJson Geometry Object or GeoSphere object supported by d3-geo (An extension of GeoJSON).
-     */
-    fitExtent(extent: [[number, number], [number, number]], object: GeoGeometryObjects): this;
-    /**
-     * Sets the projection’s scale and translate to fit the specified geographic geometry collection in the center of the given extent.
-     * Returns the projection.
-     *
-     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
-     *
-     * @param extent The extent, specified as an array [[x₀, y₀], [x₁, y₁]], where x₀ is the left side of the bounding box, y₀ is the top, x₁ is the right and y₁ is the bottom.
-     * @param object A geographic geometry collection supported by d3-geo (An extension of GeoJSON geometry collection).
-     */
-    fitExtent(extent: [[number, number], [number, number]], object: ExtendedGeometryCollection<GeoGeometryObjects>): this;
-
-    /**
-     * Sets the projection’s scale and translate to fit the specified geographic feature in the center of an extent with the given size and top-left corner of [0, 0].
-     * Returns the projection.
-     *
-     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
-     *
-     * @param size The size of the extent, specified as an array [width, height].
-     * @param object A geographic feature supported by d3-geo (An extension of GeoJSON feature).
-     */
-    fitSize(size: [number, number], object: ExtendedFeature<GeoGeometryObjects, any>): this;
-    /**
-     * Sets the projection’s scale and translate to fit the specified geographic feature collection in the center of an extent with the given size and top-left corner of [0, 0].
-     * Returns the projection.
-     *
-     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
-     *
-     * @param size The size of the extent, specified as an array [width, height].
-     * @param object A geographic feature collection supported by d3-geo (An extension of GeoJSON feature collection).
-     */
-    fitSize(size: [number, number], object: ExtendedFeatureCollection<ExtendedFeature<GeoGeometryObjects, any>>): this;
-    /**
-     * Sets the projection’s scale and translate to fit the specified geographic geometry object in the center of an extent with the given size and top-left corner of [0, 0].
-     * Returns the projection.
-     *
-     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
-     *
-     * @param size The size of the extent, specified as an array [width, height].
-     * @param object A GeoJson Geometry Object or GeoSphere object supported by d3-geo (An extension of GeoJSON).
-     */
-    fitSize(size: [number, number], object: GeoGeometryObjects): this;
-    /**
-     * Sets the projection’s scale and translate to fit the specified geographic geometry collection in the center of an extent with the given size and top-left corner of [0, 0].
-     * Returns the projection.
-     *
-     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
-     *
-     * @param size The size of the extent, specified as an array [width, height].
-     * @param object A geographic geometry collection supported by d3-geo (An extension of GeoJSON geometry collection).
-     */
-    fitSize(size: [number, number], object: ExtendedGeometryCollection<GeoGeometryObjects>): this;
-
-    /**
-     * A convenience method for projection.fitSize where the height is automatically chosen from the aspect ratio of object and the given constraint on width.
-     *
-     * @param width The width of the extent.
-     * @param object A geographic feature supported by d3-geo (An extension of GeoJSON feature).
-     */
-    fitWidth(width: number, object: ExtendedFeature<GeoGeometryObjects, any>): this;
-    /**
-     * A convenience method for projection.fitSize where the height is automatically chosen from the aspect ratio of object and the given constraint on width.
-     *
-     * @param width The width of the extent.
-     * @param object A GeoJson Geometry Object or GeoSphere object supported by d3-geo (An extension of GeoJSON).
-     */
-    fitWidth(width: number, object: ExtendedFeatureCollection<ExtendedFeature<GeoGeometryObjects, any>>): this;
-    /**
-     * A convenience method for projection.fitSize where the height is automatically chosen from the aspect ratio of object and the given constraint on width.
-     *
-     * @param width The width of the extent.
-     * @param object A geographic feature supported by d3-geo (An extension of GeoJSON feature).
-     */
-    fitWidth(width: number, object: GeoGeometryObjects): this;
-    /**
-     * A convenience method for projection.fitSize where the height is automatically chosen from the aspect ratio of object and the given constraint on width.
-     *
-     * @param width The width of the extent.
-     * @param object A geographic geometry collection supported by d3-geo (An extension of GeoJSON geometry collection).
-     */
-    fitWidth(width: number, object: ExtendedGeometryCollection<GeoGeometryObjects>): this;
-
-    /**
-     * A convenience method for projection.fitSize where the width is automatically chosen from the aspect ratio of object and the given constraint on height.
-     *
-     * @param height The height of the extent.
-     * @param object A geographic feature supported by d3-geo (An extension of GeoJSON feature).
-     */
-    fitHeight(height: number, object: ExtendedFeature<GeoGeometryObjects, any>): this;
-    /**
-     * A convenience method for projection.fitSize where the width is automatically chosen from the aspect ratio of object and the given constraint on height.
-     *
-     * @param height The height of the extent.
-     * @param object A GeoJson Geometry Object or GeoSphere object supported by d3-geo (An extension of GeoJSON).
-     */
-    fitHeight(height: number, object: ExtendedFeatureCollection<ExtendedFeature<GeoGeometryObjects, any>>): this;
-    /**
-     * A convenience method for projection.fitSize where the width is automatically chosen from the aspect ratio of object and the given constraint on height.
-     *
-     * @param height The height of the extent.
-     * @param object A geographic feature supported by d3-geo (An extension of GeoJSON feature).
-     */
-    fitHeight(height: number, object: GeoGeometryObjects): this;
-    /**
-     * A convenience method for projection.fitSize where the width is automatically chosen from the aspect ratio of object and the given constraint on height.
-     *
-     * @param height The height of the extent.
-     * @param object A geographic geometry collection supported by d3-geo (An extension of GeoJSON geometry collection).
-     */
-    fitHeight(height: number, object: ExtendedGeometryCollection<GeoGeometryObjects>): this;
-
-    /**
-     * Returns a new array [longitude, latitude] in degrees representing the unprojected point of the given projected point.
-     * May return null if the specified point has no defined projected position, such as when the point is outside the clipping bounds of the projection.
-     *
-     * @param point The projected point, specified as a two-element array [x, y] (typically in pixels).
-     */
-    invert?(point: [number, number]): [number, number] | null;
-
-    /**
-     * Returns the projection’s current resampling precision which defaults to square root of 0.5.
-     * This value corresponds to the Douglas–Peucker distance.
-     */
-    precision(): number;
-    /**
-     * Sets the threshold for the projection’s adaptive resampling to the specified value in pixels and returns the projection.
-     * This value corresponds to the Douglas–Peucker distance.
-     *
-     * @param precision A numeric value in pixels to use as the threshold for the projection’s adaptive resampling.
-     */
-    precision(precision: number): this;
-
-    /**
-     * Returns the current rotation [lambda, phi, gamma] specifying the rotation angles in degrees about each spherical axis.
-     * (These correspond to yaw, pitch and roll.) which defaults [0, 0, 0].
-     */
-    rotate(): [number, number, number];
-    /**
-     * Sets the projection’s three-axis rotation to the specified angles, which must be a two- or three-element array of numbers.
-     *
-     * @param angles  A two- or three-element array of numbers [lambda, phi, gamma] specifying the rotation angles in degrees about each spherical axis.
-     * (These correspond to yaw, pitch and roll.) If the rotation angle gamma is omitted, it defaults to 0.
-     */
-    rotate(angles: [number, number] | [number, number, number]): this;
-
-    /**
      * Returns the current scale factor; the default scale is projection-specific.
      *
      * The scale factor corresponds linearly to the distance between projected points; however, absolute scale factors are not equivalent across projections.
@@ -927,6 +764,216 @@ export interface GeoProjection extends GeoStreamWrapper {
      * @param point A two-element array [tx, ty] specifying the translation offset. The default translation offset of defaults to [480, 250] places ⟨0°,0°⟩ at the center of a 960×500 area.
      */
     translate(point: [number, number]): this;
+
+    /**
+     * Returns the current center of the projection, which defaults to ⟨0°,0°⟩.
+     */
+    center(): [number, number];
+    /**
+     * Sets the projection’s center to the specified center,
+     * a two-element array of longitude and latitude in degrees and returns the projection.
+     * The default is ⟨0°,0°⟩.
+     *
+     * @param point A point specified as a two-dimensional array [longitude, latitude] in degrees.
+     */
+    center(point: [number, number]): this;
+
+    /**
+     * Returns the projection’s current angle, which defaults to 0°.
+     */
+    angle(): number;
+    /**
+     * Sets the projection’s post-projection planar rotation angle to the specified angle in degrees and returns the projection.
+     * @param angle The new rotation angle of the projection.
+     */
+    angle(angle: number): this;
+
+    /**
+     * Returns true if x-reflection is enabled, which defaults to false.
+     */
+    reflectX(): boolean;
+    /**
+     * Sets whether or not the x-dimension is reflected (negated) in the output.
+     * @param reflect Whether or not the x-dimension is reflected (negated) in the output.
+     */
+    reflectX(reflect: boolean): this;
+
+    /**
+     * Returns true if y-reflection is enabled, which defaults to false.
+     */
+    reflectY(): boolean;
+    /**
+     * Sets whether or not the y-dimension is reflected (negated) in the output.
+     * @param reflect Whether or not the y-dimension is reflected (negated) in the output.
+     */
+    reflectY(reflect: boolean): this;
+
+    /**
+     * Returns the current rotation [lambda, phi, gamma] specifying the rotation angles in degrees about each spherical axis.
+     * (These correspond to yaw, pitch and roll.) which defaults [0, 0, 0].
+     */
+    rotate(): [number, number, number];
+
+    /**
+     * Sets the projection’s three-axis rotation to the specified angles, which must be a two- or three-element array of numbers.
+     *
+     * @param angles  A two- or three-element array of numbers [lambda, phi, gamma] specifying the rotation angles in degrees about each spherical axis.
+     * (These correspond to yaw, pitch and roll.) If the rotation angle gamma is omitted, it defaults to 0.
+     */
+    rotate(angles: [number, number] | [number, number, number]): this;
+
+    /**
+     * Returns the projection’s current resampling precision which defaults to square root of 0.5.
+     * This value corresponds to the Douglas–Peucker distance.
+     */
+    precision(): number;
+    /**
+     * Sets the threshold for the projection’s adaptive resampling to the specified value in pixels and returns the projection.
+     * This value corresponds to the Douglas–Peucker distance.
+     *
+     * @param precision A numeric value in pixels to use as the threshold for the projection’s adaptive resampling.
+     */
+    precision(precision: number): this;
+
+    /**
+     * Sets the projection’s scale and translate to fit the specified geographic feature in the center of the given extent.
+     * Returns the projection.
+     *
+     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
+     *
+     * @param extent The extent, specified as an array [[x₀, y₀], [x₁, y₁]], where x₀ is the left side of the bounding box, y₀ is the top, x₁ is the right and y₁ is the bottom.
+     * @param object A geographic feature supported by d3-geo (An extension of GeoJSON feature).
+     */
+    fitExtent(extent: [[number, number], [number, number]], object: ExtendedFeature): this;
+    /**
+     * Sets the projection’s scale and translate to fit the specified geographic feature collection in the center of the given extent.
+     * Returns the projection.
+     *
+     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
+     *
+     * @param extent The extent, specified as an array [[x₀, y₀], [x₁, y₁]], where x₀ is the left side of the bounding box, y₀ is the top, x₁ is the right and y₁ is the bottom.
+     * @param object A geographic feature collection supported by d3-geo (An extension of GeoJSON feature collection).
+     */
+    fitExtent(extent: [[number, number], [number, number]], object: ExtendedFeatureCollection): this;
+    /**
+     * Sets the projection’s scale and translate to fit the specified geographic geometry object in the center of the given extent.
+     * Returns the projection.
+     *
+     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
+     *
+     * @param extent The extent, specified as an array [[x₀, y₀], [x₁, y₁]], where x₀ is the left side of the bounding box, y₀ is the top, x₁ is the right and y₁ is the bottom.
+     * @param object A GeoJson Geometry Object or GeoSphere object supported by d3-geo (An extension of GeoJSON).
+     */
+    fitExtent(extent: [[number, number], [number, number]], object: GeoGeometryObjects): this;
+    /**
+     * Sets the projection’s scale and translate to fit the specified geographic geometry collection in the center of the given extent.
+     * Returns the projection.
+     *
+     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
+     *
+     * @param extent The extent, specified as an array [[x₀, y₀], [x₁, y₁]], where x₀ is the left side of the bounding box, y₀ is the top, x₁ is the right and y₁ is the bottom.
+     * @param object A geographic geometry collection supported by d3-geo (An extension of GeoJSON geometry collection).
+     */
+    fitExtent(extent: [[number, number], [number, number]], object: ExtendedGeometryCollection): this;
+
+    /**
+     * Sets the projection’s scale and translate to fit the specified geographic feature in the center of an extent with the given size and top-left corner of [0, 0].
+     * Returns the projection.
+     *
+     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
+     *
+     * @param size The size of the extent, specified as an array [width, height].
+     * @param object A geographic feature supported by d3-geo (An extension of GeoJSON feature).
+     */
+    fitSize(size: [number, number], object: ExtendedFeature): this;
+    /**
+     * Sets the projection’s scale and translate to fit the specified geographic feature collection in the center of an extent with the given size and top-left corner of [0, 0].
+     * Returns the projection.
+     *
+     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
+     *
+     * @param size The size of the extent, specified as an array [width, height].
+     * @param object A geographic feature collection supported by d3-geo (An extension of GeoJSON feature collection).
+     */
+    fitSize(size: [number, number], object: ExtendedFeatureCollection): this;
+    /**
+     * Sets the projection’s scale and translate to fit the specified geographic geometry object in the center of an extent with the given size and top-left corner of [0, 0].
+     * Returns the projection.
+     *
+     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
+     *
+     * @param size The size of the extent, specified as an array [width, height].
+     * @param object A GeoJson Geometry Object or GeoSphere object supported by d3-geo (An extension of GeoJSON).
+     */
+    fitSize(size: [number, number], object: GeoGeometryObjects): this;
+    /**
+     * Sets the projection’s scale and translate to fit the specified geographic geometry collection in the center of an extent with the given size and top-left corner of [0, 0].
+     * Returns the projection.
+     *
+     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
+     *
+     * @param size The size of the extent, specified as an array [width, height].
+     * @param object A geographic geometry collection supported by d3-geo (An extension of GeoJSON geometry collection).
+     */
+    fitSize(size: [number, number], object: ExtendedGeometryCollection): this;
+
+    /**
+     * A convenience method for projection.fitSize where the height is automatically chosen from the aspect ratio of object and the given constraint on width.
+     *
+     * @param width The width of the extent.
+     * @param object A geographic feature supported by d3-geo (An extension of GeoJSON feature).
+     */
+    fitWidth(width: number, object: ExtendedFeature): this;
+    /**
+     * A convenience method for projection.fitSize where the height is automatically chosen from the aspect ratio of object and the given constraint on width.
+     *
+     * @param width The width of the extent.
+     * @param object A GeoJson Geometry Object or GeoSphere object supported by d3-geo (An extension of GeoJSON).
+     */
+    fitWidth(width: number, object: ExtendedFeatureCollection): this;
+    /**
+     * A convenience method for projection.fitSize where the height is automatically chosen from the aspect ratio of object and the given constraint on width.
+     *
+     * @param width The width of the extent.
+     * @param object A geographic feature supported by d3-geo (An extension of GeoJSON feature).
+     */
+    fitWidth(width: number, object: GeoGeometryObjects): this;
+    /**
+     * A convenience method for projection.fitSize where the height is automatically chosen from the aspect ratio of object and the given constraint on width.
+     *
+     * @param width The width of the extent.
+     * @param object A geographic geometry collection supported by d3-geo (An extension of GeoJSON geometry collection).
+     */
+    fitWidth(width: number, object: ExtendedGeometryCollection): this;
+
+    /**
+     * A convenience method for projection.fitSize where the width is automatically chosen from the aspect ratio of object and the given constraint on height.
+     *
+     * @param height The height of the extent.
+     * @param object A geographic feature supported by d3-geo (An extension of GeoJSON feature).
+     */
+    fitHeight(height: number, object: ExtendedFeature): this;
+    /**
+     * A convenience method for projection.fitSize where the width is automatically chosen from the aspect ratio of object and the given constraint on height.
+     *
+     * @param height The height of the extent.
+     * @param object A GeoJson Geometry Object or GeoSphere object supported by d3-geo (An extension of GeoJSON).
+     */
+    fitHeight(height: number, object: ExtendedFeatureCollection): this;
+    /**
+     * A convenience method for projection.fitSize where the width is automatically chosen from the aspect ratio of object and the given constraint on height.
+     *
+     * @param height The height of the extent.
+     * @param object A geographic feature supported by d3-geo (An extension of GeoJSON feature).
+     */
+    fitHeight(height: number, object: GeoGeometryObjects): this;
+    /**
+     * A convenience method for projection.fitSize where the width is automatically chosen from the aspect ratio of object and the given constraint on height.
+     *
+     * @param height The height of the extent.
+     * @param object A geographic geometry collection supported by d3-geo (An extension of GeoJSON geometry collection).
+     */
+    fitHeight(height: number, object: ExtendedGeometryCollection): this;
 }
 
 /**
@@ -956,7 +1003,7 @@ export interface GeoConicProjection extends GeoProjection {
 export interface GeoContext {
     /**
      * Adds an arc to the path with center point (x, y) and radius r starting at startAngle and ending at endAngle.
-     * The arc is drawn in clockwise directio by default.
+     * The arc is drawn in clockwise direction by default.
      *
      * @param x x-coordinate of arc center point.
      * @param y y-coordinate of arc center point.
@@ -1004,7 +1051,7 @@ export interface GeoContext {
  *
  * The second generic corresponds to the type of the DatumObject which will be passed into the geo path generator for rendering.
  */
-export interface GeoPath<This, DatumObject extends GeoPermissibleObjects> {
+export interface GeoPath<This = any, DatumObject extends GeoPermissibleObjects = GeoPermissibleObjects> {
     /**
      * Renders the given object, which may be any GeoJSON feature or geometry object:
      *
@@ -1026,7 +1073,7 @@ export interface GeoPath<This, DatumObject extends GeoPermissibleObjects> {
      * IMPORTANT: If the rendering context of the geoPath generator is null,
      * then the geoPath is returned as an SVG path data string.
      *
-     * Separate path elements are typically slower than a single path element. However, distinct path elements are useful for styling and interation (e.g., click or mouseover).
+     * Separate path elements are typically slower than a single path element. However, distinct path elements are useful for styling and interaction (e.g., click or mouseover).
      * Canvas rendering (see path.context) is typically faster than SVG, but requires more effort to implement styling and interaction.
      *
      * The first generic type of the GeoPath generator used, must correspond to the "this" context bound to the function upon invocation.
@@ -1055,7 +1102,7 @@ export interface GeoPath<This, DatumObject extends GeoPermissibleObjects> {
      * IMPORTANT: If the geoPath generator has been configured with a rendering context,
      * then the geoPath is rendered to this context as a sequence of path method calls and this function returns void.
      *
-     * Separate path elements are typically slower than a single path element. However, distinct path elements are useful for styling and interation (e.g., click or mouseover).
+     * Separate path elements are typically slower than a single path element. However, distinct path elements are useful for styling and interaction (e.g., click or mouseover).
      * Canvas rendering (see path.context) is typically faster than SVG, but requires more effort to implement styling and interaction.
      *
      * The first generic type of the GeoPath generator used, must correspond to the "this" context bound to the function upon invocation.
@@ -1214,7 +1261,7 @@ export interface GeoPath<This, DatumObject extends GeoPermissibleObjects> {
  * @param context An (optional) rendering context to be used. If a context is provided, it must at least implement the interface described by GeoContext, a subset of the CanvasRenderingContext2D API.
  * Setting the context to "null" means that the path generator will return an SVG path string representing the to be rendered object. The default is "null".
  */
-export function geoPath(projection?: GeoProjection | GeoStreamWrapper | null, context?: GeoContext | null): GeoPath<any, GeoPermissibleObjects>;
+export function geoPath(projection?: GeoProjection | GeoStreamWrapper | null, context?: GeoContext | null): GeoPath;
 /**
  * Creates a new geographic path generator with the default settings.
  *
@@ -1325,10 +1372,21 @@ export function geoOrthographicRaw(): GeoRawProjection;
  * The stereographic projection.
  */
 export function geoStereographic(): GeoProjection;
+
 /**
  * The raw stereographic projection.
  */
 export function geoStereographicRaw(): GeoRawProjection;
+
+/**
+ * The Equal Eartch projection, by Bojan Šavrič et al., 2018.
+ */
+export function geoEqualEarth(): GeoProjection;
+
+/**
+ * The raw Equal Earth projection, by Bojan Šavrič et al., 2018.
+ */
+export function geoEqualEarthRaw(): GeoRawProjection;
 
 // Composite Projections ---------------------------------------------------
 
@@ -1482,139 +1540,43 @@ export function geoTransform<T extends GeoTransformPrototype>(methods: T): { str
 // geoIdentity() =================================================================
 
 /**
+ * @deprecated Misspelled name. Use GeoIdentityTransform.
+ */
+export type GeoIdentityTranform = GeoIdentityTransform;
+
+/**
  * Geo Identity Transform
  */
-export interface GeoIdentityTranform extends GeoStreamWrapper {
+export interface GeoIdentityTransform extends GeoStreamWrapper {
     /**
-     * Returns the current viewport clip extent which defaults to null.
+     * Returns a new array [x, y] (typically in pixels) representing the projected point of the given point.
+     * The point must be specified as a two-element array [longitude, latitude] in degrees.
+     * May return null if the specified point has no defined projected position, such as when the point is outside the clipping bounds of the projection.
+     *
+     * @param point A point specified as a two-dimensional array [longitude, latitude] in degrees.
      */
-    clipExtent(): [[number, number], [number, number]] | null;
-    /**
-     * Sets the clip extent to null and returns the projection.
-     * With a clip extent of null, no viewport clipping is performed.
-     *
-     * Viewport clipping is independent of small-circle clipping via projection.clipAngle.
-     *
-     * @param extent Set to null to disable viewport clipping.
-     */
-    clipExtent(extent: null): this;
-    /**
-     * Sets the projection’s viewport clip extent to the specified bounds in pixels and returns the projection.
-     * The extent bounds are specified as an array [[x₀, y₀], [x₁, y₁]], where x₀ is the left-side of the viewport, y₀ is the top, x₁ is the right and y₁ is the bottom.
-     *
-     * Viewport clipping is independent of small-circle clipping via projection.clipAngle.
-     *
-     * @param extent The extent bounds are specified as an array [[x₀, y₀], [x₁, y₁]], where x₀ is the left-side of the viewport, y₀ is the top, x₁ is the right and y₁ is the bottom.
-     */
-    clipExtent(extent: [[number, number], [number, number]]): this;
+    (point: [number, number]): [number, number] | null;
 
     /**
-     * Sets the projection’s scale and translate to fit the specified geographic feature in the center of the given extent.
-     * Returns the projection.
+     * Returns a new array [longitude, latitude] in degrees representing the unprojected point of the given projected point.
+     * May return null if the specified point has no defined projected position, such as when the point is outside the clipping bounds of the projection.
      *
-     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
-     *
-     * @param extent The extent, specified as an array [[x₀, y₀], [x₁, y₁]], where x₀ is the left side of the bounding box, y₀ is the top, x₁ is the right and y₁ is the bottom.
-     * @param object A geographic feature supported by d3-geo (An extension of GeoJSON feature).
+     * @param point The projected point, specified as a two-element array [x, y] (typically in pixels).
      */
-    fitExtent(extent: [[number, number], [number, number]], object: ExtendedFeature<GeoGeometryObjects, any>): this;
-    /**
-     * Sets the projection’s scale and translate to fit the specified geographic feature collection in the center of the given extent.
-     * Returns the projection.
-     *
-     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
-     *
-     * @param extent The extent, specified as an array [[x₀, y₀], [x₁, y₁]], where x₀ is the left side of the bounding box, y₀ is the top, x₁ is the right and y₁ is the bottom.
-     * @param object A geographic feature collection supported by d3-geo (An extension of GeoJSON feature collection).
-     */
-    fitExtent(extent: [[number, number], [number, number]], object: ExtendedFeatureCollection<ExtendedFeature<GeoGeometryObjects, any>>): this;
-    /**
-     * Sets the projection’s scale and translate to fit the specified geographic geometry object in the center of the given extent.
-     * Returns the projection.
-     *
-     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
-     *
-     * @param extent The extent, specified as an array [[x₀, y₀], [x₁, y₁]], where x₀ is the left side of the bounding box, y₀ is the top, x₁ is the right and y₁ is the bottom.
-     * @param object A GeoJson Geometry Object or GeoSphere object supported by d3-geo (An extension of GeoJSON).
-     */
-    fitExtent(extent: [[number, number], [number, number]], object: GeoGeometryObjects): this;
-    /**
-     * Sets the projection’s scale and translate to fit the specified geographic geometry collection in the center of the given extent.
-     * Returns the projection.
-     *
-     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
-     *
-     * @param extent The extent, specified as an array [[x₀, y₀], [x₁, y₁]], where x₀ is the left side of the bounding box, y₀ is the top, x₁ is the right and y₁ is the bottom.
-     * @param object A geographic geometry collection supported by d3-geo (An extension of GeoJSON geometry collection).
-     */
-    fitExtent(extent: [[number, number], [number, number]], object: ExtendedGeometryCollection<GeoGeometryObjects>): this;
+    invert(point: [number, number]): [number, number] | null;
 
     /**
-     * Sets the projection’s scale and translate to fit the specified geographic feature in the center of an extent with the given size and top-left corner of [0, 0].
-     * Returns the projection.
-     *
-     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
-     *
-     * @param size The size of the extent, specified as an array [width, height].
-     * @param object A geographic feature supported by d3-geo (An extension of GeoJSON feature).
+     * Returns the current cartesian clipping function.
+     * Post-clipping occurs on the plane, when a projection is bounded to a certain extent such as a rectangle.
      */
-    fitSize(size: [number, number], object: ExtendedFeature<GeoGeometryObjects, any>): this;
+    postclip(): (stream: GeoStream) => GeoStream;
     /**
-     * Sets the projection’s scale and translate to fit the specified geographic feature collection in the center of an extent with the given size and top-left corner of [0, 0].
-     * Returns the projection.
+     * Sets the projection’s cartesian clipping to the specified function and returns the projection.
      *
-     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
-     *
-     * @param size The size of the extent, specified as an array [width, height].
-     * @param object A geographic feature collection supported by d3-geo (An extension of GeoJSON feature collection).
+     * @param postclip A cartesian clipping function. Clipping functions are implemented as transformations of a projection stream.
+     * Post-clipping operates on planar coordinates, in pixels.
      */
-    fitSize(size: [number, number], object: ExtendedFeatureCollection<ExtendedFeature<GeoGeometryObjects, any>>): this;
-    /**
-     * Sets the projection’s scale and translate to fit the specified geographic geometry object in the center of an extent with the given size and top-left corner of [0, 0].
-     * Returns the projection.
-     *
-     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
-     *
-     * @param size The size of the extent, specified as an array [width, height].
-     * @param object A GeoJson Geometry Object or GeoSphere object supported by d3-geo (An extension of GeoJSON).
-     */
-    fitSize(size: [number, number], object: GeoGeometryObjects): this;
-    /**
-     * Sets the projection’s scale and translate to fit the specified geographic geometry collection in the center of an extent with the given size and top-left corner of [0, 0].
-     * Returns the projection.
-     *
-     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
-     *
-     * @param size The size of the extent, specified as an array [width, height].
-     * @param object A geographic geometry collection supported by d3-geo (An extension of GeoJSON geometry collection).
-     */
-    fitSize(size: [number, number], object: ExtendedGeometryCollection<GeoGeometryObjects>): this;
-
-    /**
-     * Returns true if x-reflection is enabled, which defaults to false.
-     */
-    reflectX(): boolean;
-    /**
-     * Sets whether or not the x-dimension is reflected (negated) in the output.
-     *
-     * @param reflect true = reflect x-dimension, false = do not reflect x-dimension.
-     */
-    reflectX(reflect: boolean): this;
-
-    /**
-     * Returns true if y-reflection is enabled, which defaults to false.
-     */
-    reflectY(): boolean;
-    /**
-     * Sets whether or not the y-dimension is reflected (negated) in the output.
-     *
-     * This is especially useful for transforming from standard spatial reference systems,
-     * which treat positive y as pointing up, to display coordinate systems such as Canvas and SVG,
-     * which treat positive y as pointing down.
-     *
-     * @param reflect true = reflect y-dimension, false = do not reflect y-dimension.
-     */
-    reflectY(reflect: boolean): this;
+    postclip(postclip: (stream: GeoStream) => GeoStream): this;
 
     /**
      * Returns the current scale factor.
@@ -1642,12 +1604,153 @@ export interface GeoIdentityTranform extends GeoStreamWrapper {
      * @param point A two-element array [tx, ty] specifying the translation offset.
      */
     translate(point: [number, number]): this;
+
+    /**
+     * Returns the projection’s current angle, which defaults to 0°.
+     */
+    angle(): number;
+    /**
+     * Sets the projection’s post-projection planar rotation angle to the specified angle in degrees and returns the projection.
+     * @param angle The new rotation angle of the projection.
+     */
+    angle(angle: number): this;
+
+    /**
+     * Sets the projection’s scale and translate to fit the specified geographic feature in the center of the given extent.
+     * Returns the projection.
+     *
+     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
+     *
+     * @param extent The extent, specified as an array [[x₀, y₀], [x₁, y₁]], where x₀ is the left side of the bounding box, y₀ is the top, x₁ is the right and y₁ is the bottom.
+     * @param object A geographic feature supported by d3-geo (An extension of GeoJSON feature).
+     */
+    fitExtent(extent: [[number, number], [number, number]], object: ExtendedFeature): this;
+    /**
+     * Sets the projection’s scale and translate to fit the specified geographic feature collection in the center of the given extent.
+     * Returns the projection.
+     *
+     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
+     *
+     * @param extent The extent, specified as an array [[x₀, y₀], [x₁, y₁]], where x₀ is the left side of the bounding box, y₀ is the top, x₁ is the right and y₁ is the bottom.
+     * @param object A geographic feature collection supported by d3-geo (An extension of GeoJSON feature collection).
+     */
+    fitExtent(extent: [[number, number], [number, number]], object: ExtendedFeatureCollection): this;
+    /**
+     * Sets the projection’s scale and translate to fit the specified geographic geometry object in the center of the given extent.
+     * Returns the projection.
+     *
+     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
+     *
+     * @param extent The extent, specified as an array [[x₀, y₀], [x₁, y₁]], where x₀ is the left side of the bounding box, y₀ is the top, x₁ is the right and y₁ is the bottom.
+     * @param object A GeoJson Geometry Object or GeoSphere object supported by d3-geo (An extension of GeoJSON).
+     */
+    fitExtent(extent: [[number, number], [number, number]], object: GeoGeometryObjects): this;
+    /**
+     * Sets the projection’s scale and translate to fit the specified geographic geometry collection in the center of the given extent.
+     * Returns the projection.
+     *
+     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
+     *
+     * @param extent The extent, specified as an array [[x₀, y₀], [x₁, y₁]], where x₀ is the left side of the bounding box, y₀ is the top, x₁ is the right and y₁ is the bottom.
+     * @param object A geographic geometry collection supported by d3-geo (An extension of GeoJSON geometry collection).
+     */
+    fitExtent(extent: [[number, number], [number, number]], object: ExtendedGeometryCollection): this;
+
+    /**
+     * Sets the projection’s scale and translate to fit the specified geographic feature in the center of an extent with the given size and top-left corner of [0, 0].
+     * Returns the projection.
+     *
+     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
+     *
+     * @param size The size of the extent, specified as an array [width, height].
+     * @param object A geographic feature supported by d3-geo (An extension of GeoJSON feature).
+     */
+    fitSize(size: [number, number], object: ExtendedFeature): this;
+    /**
+     * Sets the projection’s scale and translate to fit the specified geographic feature collection in the center of an extent with the given size and top-left corner of [0, 0].
+     * Returns the projection.
+     *
+     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
+     *
+     * @param size The size of the extent, specified as an array [width, height].
+     * @param object A geographic feature collection supported by d3-geo (An extension of GeoJSON feature collection).
+     */
+    fitSize(size: [number, number], object: ExtendedFeatureCollection): this;
+    /**
+     * Sets the projection’s scale and translate to fit the specified geographic geometry object in the center of an extent with the given size and top-left corner of [0, 0].
+     * Returns the projection.
+     *
+     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
+     *
+     * @param size The size of the extent, specified as an array [width, height].
+     * @param object A GeoJson Geometry Object or GeoSphere object supported by d3-geo (An extension of GeoJSON).
+     */
+    fitSize(size: [number, number], object: GeoGeometryObjects): this;
+    /**
+     * Sets the projection’s scale and translate to fit the specified geographic geometry collection in the center of an extent with the given size and top-left corner of [0, 0].
+     * Returns the projection.
+     *
+     * Any clip extent is ignored when determining the new scale and translate. The precision used to compute the bounding box of the given object is computed at an effective scale of 150.
+     *
+     * @param size The size of the extent, specified as an array [width, height].
+     * @param object A geographic geometry collection supported by d3-geo (An extension of GeoJSON geometry collection).
+     */
+    fitSize(size: [number, number], object: ExtendedGeometryCollection): this;
+
+    /**
+     * Returns the current viewport clip extent which defaults to null.
+     */
+    clipExtent(): [[number, number], [number, number]] | null;
+    /**
+     * Sets the clip extent to null and returns the projection.
+     * With a clip extent of null, no viewport clipping is performed.
+     *
+     * Viewport clipping is independent of small-circle clipping via projection.clipAngle.
+     *
+     * @param extent Set to null to disable viewport clipping.
+     */
+    clipExtent(extent: null): this;
+    /**
+     * Sets the projection’s viewport clip extent to the specified bounds in pixels and returns the projection.
+     * The extent bounds are specified as an array [[x₀, y₀], [x₁, y₁]], where x₀ is the left-side of the viewport, y₀ is the top, x₁ is the right and y₁ is the bottom.
+     *
+     * Viewport clipping is independent of small-circle clipping via projection.clipAngle.
+     *
+     * @param extent The extent bounds are specified as an array [[x₀, y₀], [x₁, y₁]], where x₀ is the left-side of the viewport, y₀ is the top, x₁ is the right and y₁ is the bottom.
+     */
+    clipExtent(extent: [[number, number], [number, number]]): this;
+
+    /**
+     * Returns true if x-reflection is enabled, which defaults to false.
+     */
+    reflectX(): boolean;
+    /**
+     * Sets whether or not the x-dimension is reflected (negated) in the output.
+     *
+     * @param reflect true = reflect x-dimension, false = do not reflect x-dimension.
+     */
+    reflectX(reflect: boolean): this;
+
+    /**
+     * Returns true if y-reflection is enabled, which defaults to false.
+     */
+    reflectY(): boolean;
+    /**
+     * Sets whether or not the y-dimension is reflected (negated) in the output.
+     *
+     * This is especially useful for transforming from standard spatial reference systems,
+     * which treat positive y as pointing up, to display coordinate systems such as Canvas and SVG,
+     * which treat positive y as pointing down.
+     *
+     * @param reflect true = reflect y-dimension, false = do not reflect y-dimension.
+     */
+    reflectY(reflect: boolean): this;
 }
 
 /**
  * Returns the identity transform which can be used to scale, translate and clip planar geometry.
  */
-export function geoIdentity(): GeoIdentityTranform;
+export function geoIdentity(): GeoIdentityTransform;
 
 // ----------------------------------------------------------------------
 // Clipping Functions

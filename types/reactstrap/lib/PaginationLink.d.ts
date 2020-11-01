@@ -1,13 +1,16 @@
+import * as React from 'react';
 import { CSSModule } from '../index';
 
-export interface PaginationLinkProps extends React.HTMLProps<HTMLAnchorElement> {
-  'aria-label'?: string;
-  className?: string;
-  cssModule?: CSSModule;
-  next?: boolean;
-  previous?: boolean;
-  tag?: React.ReactType;
+export interface PaginationLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
+    [key: string]: any;
+    'aria-label'?: string;
+    cssModule?: CSSModule;
+    next?: boolean;
+    previous?: boolean;
+    first?: boolean;
+    last?: boolean;
+    tag?: React.ElementType;
 }
 
-declare const PaginationLink: React.StatelessComponent<PaginationLinkProps>;
+declare class PaginationLink<T = {[key: string]: any}> extends React.Component<PaginationLinkProps> {}
 export default PaginationLink;

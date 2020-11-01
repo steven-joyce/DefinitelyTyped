@@ -164,7 +164,7 @@ nw.Screen.chooseDesktopMedia( ["window", "screen"],
                 maxWidth: 1920,
                 maxHeight: 1080
             },
-            optional: <any[]>[]
+            optional: [] as any[]
         };
         //navigator.webkitGetUserMedia( { audio: false, video: constraint }, success_func, fallback_func );
     }
@@ -349,3 +349,6 @@ nw.Window.get().on( 'new-win-policy', function ( frame, url, policy ) {
     // and open it in external browser
     nw.Shell.openExternal( url );
 });
+
+// Require a package
+var fs = nw.require('fs')

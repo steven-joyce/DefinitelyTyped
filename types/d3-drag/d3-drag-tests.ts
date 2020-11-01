@@ -7,9 +7,9 @@
  */
 
 import * as d3Drag from 'd3-drag';
-import { event, select, Selection } from 'd3-selection';
+import { ArrayLike, select, Selection } from 'd3-selection';
 
-// NB: Consider alternative approachto getting live event-binding
+// NB: Consider alternative approach to getting live event-binding
 // when using webpack as suggested by @ocombe in response to
 // event binding question https://github.com/d3/d3-zoom/issues/32#issuecomment-229889310
 // d3.getEvent = () => require("d3-selection").event;
@@ -62,12 +62,12 @@ circleCustomDrag = d3Drag.drag<SVGCircleElement, CircleDatum, CustomSubject | d3
 
 // set and get container element/accessor ----------------------------
 
-let containerAccessor: (this: SVGCircleElement, d: CircleDatum, i: number, group: SVGCircleElement[] | NodeListOf<SVGCircleElement>) => d3Drag.DragContainerElement;
+let containerAccessor: (this: SVGCircleElement, d: CircleDatum, i: number, group: SVGCircleElement[] | ArrayLike<SVGCircleElement>) => d3Drag.DragContainerElement;
 
 containerAccessor = function(d, i, group) {
     console.log('Node Id of circle: ', d.nodeId);
     // console.log(this.a); // fails, a is not a property of SVGCircleElement
-    return this.ownerSVGElement; // this-type is SVGCircleElement
+    return this.ownerSVGElement!; // this-type is SVGCircleElement
 };
 
 // Test chainability
@@ -75,7 +75,7 @@ circleDrag = circleDrag
     .container(function(d, i, group) { // container accessor function setter
         console.log('Node Id of circle: ', d.nodeId); // CircleDatum type
         // console.log(this.a); // fails, a is not a property of SVGCircleElement
-        return this.ownerSVGElement; // this-type is SVGCircleElement
+        return this.ownerSVGElement!; // this-type is SVGCircleElement
     });
 
 // Test chainability
@@ -96,14 +96,14 @@ const distance: number  = circleDrag.clickDistance();
 
 // set and get filter ---------------------------------------------------------
 
-let filterFn: (this: SVGCircleElement, datum: CircleDatum, index: number, group: SVGCircleElement[] | NodeListOf<SVGCircleElement>) => boolean;
+let filterFn: (this: SVGCircleElement, event: any, datum: CircleDatum) => boolean;
 
-filterFn = function(d) {
+filterFn = function(event, d) {
     return (d.color !== 'green' && this.r.baseVal.value < 10) ? !event.button : true; // 'this' is SVGCircleElement and d is CircleDatum
 };
 
 // chainable
-circleDrag = circleDrag.filter(function(d, i, group) {
+circleDrag = circleDrag.filter(function(event, d) {
     return (d.color !== 'green' && this.r.baseVal.value < 10) ? !event.button : true; // 'this' is SVGCircleElement and d is CircleDatum
 });
 
@@ -121,7 +121,7 @@ circleDrag = circleDrag.touchable(true);
 circleDrag = circleDrag.touchable(function(d, i, group) {
     const that: SVGCircleElement = this;
     const datum: CircleDatum = d;
-    const g: SVGCircleElement[] | NodeListOf<SVGCircleElement> = group;
+    const g: SVGCircleElement[] | ArrayLike<SVGCircleElement> = group;
     return "ontouchstart" in this && datum.color === 'green';
 });
 
@@ -130,13 +130,11 @@ touchableFn = circleDrag.touchable();
 
 // set and get subject ---------------------------------------------------------
 
-circleCustomDrag.subject(function(d, i, g) {
+circleCustomDrag.subject(function(event, d) {
     // Cast event type for completeness, otherwise event is of type any.
-    const e = <d3Drag.D3DragEvent<SVGCircleElement, CircleDatum, CustomSubject | d3Drag.SubjectPosition>> event;
+    const e = event as d3Drag.D3DragEvent<SVGCircleElement, CircleDatum, CustomSubject | d3Drag.SubjectPosition>;
     const that: SVGCircleElement = this;
     const datum: CircleDatum = d;
-    const index: number = i;
-    const group: SVGCircleElement[] | ArrayLike<SVGCircleElement> = g;
 
     if (d == null) {
         return { x: e.x, y: e.y };
@@ -153,34 +151,34 @@ circleCustomDrag.subject(function(d, i, g) {
 });
 
 // test getter
-let subjectAccessor: (this: SVGCircleElement, datum: CircleDatum, index: number, group: SVGCircleElement[] | NodeListOf<SVGCircleElement>) => CustomSubject | d3Drag.SubjectPosition;
+let subjectAccessor: (this: SVGCircleElement, event: any, datum: CircleDatum) => CustomSubject | d3Drag.SubjectPosition;
 
 subjectAccessor = circleCustomDrag.subject();
 
 // set and get event handler ---------------------------------------------------
 
-function dragstarted(this: SVGCircleElement, d: CircleDatum) {
+function dragstarted(this: SVGCircleElement, event: any, d: CircleDatum) {
     // cast d3 event to drag event. Otherwise, d3 event is currently defined as type 'any'
-    const e = <d3Drag.D3DragEvent<SVGCircleElement, CircleDatum, CircleDatum | d3Drag.SubjectPosition>> event;
+    const e = event as d3Drag.D3DragEvent<SVGCircleElement, CircleDatum, CircleDatum | d3Drag.SubjectPosition>;
     e.sourceEvent.stopPropagation();
     select(this).classed('dragging', true);
 }
 
-function dragged(this: SVGCircleElement, d: CircleDatum) {
+function dragged(this: SVGCircleElement, event: any, d: CircleDatum) {
     // cast d3 event to drag event. Otherwise, d3 event is currently defined as type 'any'
-    const e = <d3Drag.D3DragEvent<SVGCircleElement, CircleDatum, CircleDatum | d3Drag.SubjectPosition>> event;
+    const e = event as d3Drag.D3DragEvent<SVGCircleElement, CircleDatum, CircleDatum | d3Drag.SubjectPosition>;
     select(this).attr('cx', d.x = e.x).attr('cy', d.y = e.y);
 }
 
-function dragended(this: SVGCircleElement, d: CircleDatum) {
+function dragended(this: SVGCircleElement, event: any, d: CircleDatum) {
     select(this).classed('dragging', false);
 }
 
-function wrongDragHandler1(this: SVGCircleElement, d: { wrongData: number }) {
+function wrongDragHandler1(this: SVGCircleElement, event: any, d: { wrongData: number }) {
     // do whatever;
 }
 
-function wrongDragHandler2(this: SVGRectElement, d: CircleDatum) {
+function wrongDragHandler2(this: SVGRectElement, event: any, d: CircleDatum) {
     // do whatever;
 }
 
@@ -195,7 +193,7 @@ circleDrag = circleDrag
 // remove event listeners for a drag event type
 circleDrag.on('start.tmp', null);
 
-let handler: ((this: SVGCircleElement, d: CircleDatum, i: number, group: SVGCircleElement[] | NodeListOf<SVGCircleElement>) => void) | undefined = circleDrag.on('start');
+let handler: ((this: SVGCircleElement, event: any, d: CircleDatum) => void) | undefined = circleDrag.on('start');
 // fails, wrong dragged DOM event
 // let wrongHandler1: ((this:SVGRectElement, d:CircleDatum, i: number, group: SVGRectElement[] | NodeListOf<SVGRectElement>)=> void) | undefined = circleDrag.on('start');
 // fails, handler with wrong datum type
@@ -214,7 +212,7 @@ const wrongSelection: Selection<HTMLDivElement, any, any, any> = select<HTMLDivE
 // Test Drag Event Interface
 // -----------------------------------------------------------------------------
 
-let e: d3Drag.D3DragEvent<SVGCircleElement, CircleDatum, CircleDatum | d3Drag.SubjectPosition> = event;
+declare let e: d3Drag.D3DragEvent<SVGCircleElement, CircleDatum, CircleDatum | d3Drag.SubjectPosition>;
 
 circleDrag = e.target; // target return drag behavior
 
@@ -232,7 +230,7 @@ const sourceEvent: any = e.sourceEvent;
 // As always, the below tests are for signature only, no functional purpose
 
 // remove event listeners for a given event type
-e = e.on('start.tmp', null); // chainability test through reassigment
+e = e.on('start.tmp', null); // chainability test through reassignment
 
 e = e.on('drag', dragged);
 // e = e.on('drag', wrongDragHandler1); // fails, wrong datum type in handler

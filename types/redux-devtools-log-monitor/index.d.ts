@@ -2,10 +2,10 @@
 // Project: https://github.com/gaearon/redux-devtools-log-monitor
 // Definitions by: Petryshyn Sergii <https://github.com/mc-petry>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.6
+// TypeScript Version: 2.8
 
 import * as React from 'react'
-import { ColorScheme } from 'base16'
+import { Base16Theme } from 'base16'
 
 interface ILogMonitorProps {
     /**
@@ -14,7 +14,7 @@ interface ILogMonitorProps {
      *
      * @see https://github.com/gaearon/redux-devtools-themes
      */
-    theme?: string | ColorScheme
+    theme?: string | Base16Theme
 
     /**
      * A function that selects the slice of the state for DevTools to show.

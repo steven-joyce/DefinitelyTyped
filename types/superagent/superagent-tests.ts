@@ -83,6 +83,12 @@ request
     .set({ 'API-Key': 'foobar', Accept: 'application/json' })
     .end(callback);
 
+// Setting cookie header
+request
+    .get('/search')
+    .set('Cookie', ['name1=value1; Domain=.test.com; Path=/', 'name2=value2; Domain=.test.com; Path=/'])
+    .end(callback);
+
 // GET requests
 request
     .get('/search')
@@ -162,6 +168,12 @@ request.get('/user')
 request.get('/user')
     .accept('png');
 
+// Setting max response size
+request
+    .get('/search')
+    .maxResponseSize(1000)
+    .end(callback);
+
 // Query strings
 request
     .post('/')
@@ -194,8 +206,16 @@ request('/search')
         const files: object = res.files;
         const text: string = res.text;
         const contentLength = res.header['content-length'];
+        assert(res.header === res.headers);
         const contentType: string = res.type;
         const charset: string = res.charset;
+        const redirects: string[] = res.redirects;
+    });
+
+// Getting response 'Set-Cookie'
+request('/search')
+    .end((res: request.Response) => {
+      const setCookie: string[] = res.get('Set-Cookie');
     });
 
 // Custom parsers
@@ -230,11 +250,27 @@ const reqCookies: string = req.cookies;
 
 console.log(`${reqMethod} request to ${reqUrl} cookies ${reqCookies}`);
 
-// Basic authentication
+// Authentication
 request.get('http://tobi:learnboost@local').end(callback);
+
 request
     .get('http://local')
     .auth('tobo', 'learnboost')
+    .end(callback);
+
+request
+    .get('http://local')
+    .auth('user', 'pass', { type: 'basic' })
+    .end(callback);
+
+request
+    .get('http://local')
+    .auth('user', 'pass', {type: 'auto'})
+    .end(callback);
+
+request
+    .get('http://local')
+    .auth('abearertoken', { type: 'bearer' })
     .end(callback);
 
 // Following redirects
@@ -252,6 +288,10 @@ request
     .get('http://example.com/search')
     .retry(2)
     .end(callback);
+request
+    .get('http://example.com/search')
+    .retry(2, callback)
+    .end(callback);
 
 (() => {
     const stream = fs.createWriteStream('path/to/my.json');
@@ -266,8 +306,8 @@ request
     req.part()
         .set('Content-Type', 'image/png')
         .set('Content-Disposition', 'attachment; filename="myimage.png"')
-        .write('some image data')
-        .write('some more image data');
+        .write('some image data');
+    req.write('some more image data');
 
     req.part()
         .set('Content-Disposition', 'form-data; name="name"')
@@ -369,6 +409,63 @@ request
     .pfx(pfx)
     .end(callback);
 
+// pfx with passphrase, from: https://github.com/visionmedia/superagent/pull/1230/commits/96af65ffc6256df633f893095d1dc828694bbfbc
+const passpfx = fs.readFileSync('passcert.pfx');
+request
+    .post('/secure')
+    .pfx({
+        pfx: passpfx,
+        passphrase: 'test'
+    })
+    .end(callback);
+
+// HTTPS request with string, Buffer, and arrays of strings and Buffers, from: https://nodejs.org/api/tls.html#tls_tls_createsecurecontext_options
+request
+    .post('/secure')
+    .ca('ca')
+    .key('key')
+    .cert('cert')
+    .end(callback);
+
+request
+    .post('/secure')
+    .ca(['ca'])
+    .key(['key'])
+    .cert(['cert'])
+    .end(callback);
+
+request
+    .post('/secure')
+    .ca([ca])
+    .key([key])
+    .cert([cert])
+    .end(callback);
+
+request
+    .post('/secure')
+    .pfx('cert.pfx')
+    .end(callback);
+
+request
+    .post('/secure')
+    .pfx(['cert.pfx'])
+    .end(callback);
+
+request
+    .post('/secure')
+    .pfx([pfx])
+    .end(callback);
+
+// 'response' event, adapted from: https://visionmedia.github.io/superagent/docs/test.html
+request
+    .get('/user/1')
+    .on('response', res => {
+      try {
+        assert.equal('bar', res.body.foo);
+      } catch (e) { /* ignore */ }
+    })
+    .end();
+
 // ok, from: https://github.com/visionmedia/superagent/commit/34533bbc29833889090847c45a82b0ea81b2f06d
 request
     .get('/404')
@@ -376,3 +473,36 @@ request
     .then(response => {
         // reads 404 page as a successful response
     });
+
+// Test that the "Plugin" type from "use" provides a SuperAgentRequest rather than a Request,
+// which has additional properties.
+const echoPlugin = (request: request.SuperAgentRequest) => {
+  req.url = '' + req.url;
+  req.cookies = '' + req.cookies;
+  if (req.method) {
+    req.url = '/echo';
+  }
+};
+
+request
+    .get('/echo')
+    .use(echoPlugin)
+    .end();
+
+async function testDefaultOptions() {
+    // Default options for multiple requests
+    const agentWithDefaultOptions = request
+        .agent()
+        .use(() => null)
+        .auth('digest', 'secret', { type: 'auto' });
+
+    await agentWithDefaultOptions.get('/with-plugin-and-auth');
+    await agentWithDefaultOptions.get('/also-with-plugin-and-auth');
+}
+
+request.get('/').http2().end(callback);
+request('POST', '/').http2().end(callback);
+agent.get('/').http2().end(callback);
+agent('/').http2().end(callback);
+
+testDefaultOptions();

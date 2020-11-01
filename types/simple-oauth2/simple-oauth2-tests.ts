@@ -1,29 +1,48 @@
 // off https://github.com/lelylan/simple-oauth2/blob/master/README.md
 // slightly changed to remove external dependencies
 
+// Initialize the OAuth2 Library
+import * as oauth2lib from "simple-oauth2";
+
 // Set the configuration settings
-const credentials = {
+const credentials: oauth2lib.ModuleOptions = {
     client: {
-        id: '<client-id>',
-        secret: '<client-secret>'
+        id: "<client-id>",
+        secret: "<client-secret>",
     },
     auth: {
-        tokenHost: 'https://api.oauth.com'
-    }
+        tokenHost: "https://api.oauth.com",
+    },
 };
 
-// Initialize the OAuth2 Library
-// const oauth2 = require('simple-oauth2').create(credentials);
-import oauth2lib = require("simple-oauth2");
-const oauth2 = oauth2lib.create(credentials);
+const oauth2AuthorizationCode = new oauth2lib.AuthorizationCode(credentials);
+const oauth2ClientCredentials = new oauth2lib.ClientCredentials(credentials);
+const oauth2ResourceOwnerPassword = new oauth2lib.ResourceOwnerPassword(
+  credentials
+);
+
+// Test custom `idParamName`
+{
+    const oauth2AuthorizationCode = new oauth2lib.AuthorizationCode({
+        client: { id: "x", secret: "x", idParamName: "foobar" },
+        auth: { tokenHost: "x" },
+    });
+    oauth2AuthorizationCode.authorizeURL({ foobar: "x" });
+}
 
 // #Authorization Code flow
-(() => {
+(async () => {
     // Authorization oauth2 URI
-    const authorizationUri = oauth2.authorizationCode.authorizeURL({
-        redirect_uri: 'http://localhost:3000/callback',
-        scope: '<scope>',
-        state: '<state>'
+    const authorizationUri = oauth2AuthorizationCode.authorizeURL({
+        redirect_uri: "http://localhost:3000/callback",
+        scope: "<scope>",
+        state: "<state>",
+    });
+
+    oauth2AuthorizationCode.authorizeURL({
+        redirect_uri: "http://localhost:3000/callback",
+        scope: ["<scope1>", "<scope2>"],
+        state: "<state>",
     });
 
     // Redirect example using Express (see http://expressjs.com/api.html#res.redirect)
@@ -31,128 +50,131 @@ const oauth2 = oauth2lib.create(credentials);
 
     // Get the access token object (the authorization code is given from the previous step).
     const tokenConfig = {
-        code: '<code>',
-        redirect_uri: 'http://localhost:3000/callback'
+        code: "<code>",
+        redirect_uri: "http://localhost:3000/callback",
+        scope: ["<scope1>", "<scope2>"],
     };
 
-    // Callbacks
     // Save the access token
-    oauth2.authorizationCode.getToken(tokenConfig, (error, result) => {
-        if (error) {
-            console.log('Access Token Error', error.message);
-            return;
-        }
+    try {
+        const result = await oauth2AuthorizationCode.getToken(tokenConfig);
+        const accessToken = oauth2AuthorizationCode.createToken(result.token);
+    } catch (error) {
+        console.log("Access Token Error", error.message);
+    }
+})();
 
-        const token = oauth2.accessToken.create(result);
-    });
+// #Password Credentials Flow
+(async () => {
+    const tokenConfig = {
+        username: "username",
+        password: "password",
+        scope: ["<scope1>", "<scope2>"],
+    };
 
-    // Promises
     // Save the access token
-    oauth2.authorizationCode.getToken(tokenConfig)
-        .then((result) => {
-            const token = oauth2.accessToken.create(result);
-        })
-        .catch((error) => {
-            console.log('Access Token Error', error.message);
-        });
+    try {
+        const result = await oauth2ResourceOwnerPassword.getToken(tokenConfig);
+        const accessToken = oauth2ResourceOwnerPassword.createToken(result.token);
+    } catch (error) {
+        console.log("Access Token Error", error.message);
+    }
 })();
 
 // #Client Credentials Flow
-(() => {
+(async () => {
     const tokenConfig = {};
 
-    // Callbacks
     // Get the access token object for the client
-    oauth2.clientCredentials.getToken(tokenConfig, (error, result) => {
-        if (error) {
-            console.log('Access Token Error', error.message);
-            return;
-        }
-
-        const token = oauth2.accessToken.create(result);
-    });
-
-    // Promises
-    // Get the access token object for the client
-    oauth2.clientCredentials
-        .getToken(tokenConfig)
-        .then((result) => {
-            const token = oauth2.accessToken.create(result);
-        })
-        .catch((error) => {
-            console.log('Access Token error', error.message);
-        });
+    try {
+        const result = await oauth2ClientCredentials.getToken(tokenConfig);
+        const accessToken = oauth2ClientCredentials.createToken(result.token);
+    } catch (error) {
+        console.log("Access Token error", error.message);
+    }
 })();
 
 // #Access Token object
-(() => {
+async function TestFnAccessTokenObject(
+  oauthSubject:
+    | oauth2lib.AuthorizationCode
+    | oauth2lib.ClientCredentials
+    | oauth2lib.ResourceOwnerPassword
+) {
     // Sample of a JSON access token (you got it through previous steps)
     const tokenObject = {
-        access_token: '<access-token>',
-        refresh_token: '<refresh-token>',
-        expires_in: '7200'
+        access_token: "<access-token>",
+        refresh_token: "<refresh-token>",
+        expires_in: "7200",
     };
 
     // Create the access token wrapper
-    let token = oauth2.accessToken.create(tokenObject);
+    let accessToken = oauthSubject.createToken(tokenObject);
 
     // Check if the token is expired. If expired it is refreshed.
-    if (token.expired()) {
-        // Callbacks
-        token.refresh((error, result) => {
-            token = result;
-        });
-
-        // Promises
-        token.refresh()
-            .then((result) => {
-                token = result;
-            });
+    if (accessToken.expired()) {
+        try {
+            accessToken = await accessToken.refresh();
+        } catch (error) {
+            console.log("Error refreshing access token: ", error.message);
+        }
     }
 
-    // Callbacks
-    // Revoke only the access token
-    token.revoke('access_token', (error) => {
+    // Revoke both access and refresh tokens
+    try {
+        // Revoke only the access token
+        await accessToken.revoke("access_token");
+
         // Session ended. But the refresh_token is still valid.
+        // Revoke the refresh token
+        await accessToken.revoke("refresh_token");
 
-        // Revoke the refresh_token
-        token.revoke('refresh_token', (error) => {
-            console.log('token revoked.');
-        });
-    });
+        console.log("Token revoked");
+    } catch (error) {
+        console.log("Error revoking token: ", error.message);
+    }
 
-    // Promises
-    // Revoke only the access token
-    token.revoke('access_token')
-        .then(() => {
-            // Revoke the refresh token
-            return token.revoke('refresh_token');
-        })
-        .then(() => {
-            console.log('Token revoked');
-        })
-        .catch((error) => {
-            console.log('Error revoking token.', error.message);
-        });
-})();
+    // or...
+
+    try {
+        // Revokes both tokens, refresh token is only revoked if the access_token is properly revoked
+        await accessToken.revokeAll();
+    } catch (error) {
+        console.log("Error revoking token: ", error.message);
+    }
+}
+
+// #Run test `#Access Token object`
+TestFnAccessTokenObject(oauth2AuthorizationCode);
+TestFnAccessTokenObject(oauth2ClientCredentials);
+TestFnAccessTokenObject(oauth2ResourceOwnerPassword);
 
 // #Errors
 // not applicable, as those errors about missing authentication codes are already found by the typescript compiler
 
 // (function () {
-//     // Callbacks
-//     oauth2.authorizationCode.getToken({}, (error, token) => {
-//         if (error) {
-//             return console.log(error.message);
-//         }
-//     });
-
-//     // Promises
-//     oauth2.authorizationCode
-//         .getToken({})
+//     oauth2AuthorizationCode.getToken({})
 //         .catch((error) => {
 //             console.log(error.message);
 //         });
 
 //     // => { "status": "401", "message": "Unauthorized" }
 // })();
+
+// #Custom Grant
+(async () => {
+    const tokenConfig = {
+        username: "username",
+        password: "password",
+        scope: ["<scope1>", "<scope2>"],
+        grant_type: "openapi_2lo",
+    };
+
+    // Save the access token
+    try {
+        const result = await oauth2ResourceOwnerPassword.getToken(tokenConfig);
+        const accessToken = oauth2ResourceOwnerPassword.createToken(result.token);
+    } catch (error) {
+        console.log("Access Token Error", error.message);
+    }
+})();

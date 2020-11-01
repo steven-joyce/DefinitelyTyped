@@ -1,6 +1,6 @@
 // Type definitions for node-ipc 9.1
 // Project: http://riaevangelist.github.io/node-ipc/
-// Definitions by: Arvitaly <https://github.com/arvitaly>
+// Definitions by: Arvitaly <https://github.com/arvitaly>, gjurgens <https://github.com/gjurgens>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 /// <reference types="node" />
 import { Socket } from "net";
@@ -49,7 +49,7 @@ declare namespace NodeIPC {
          * @param host is the host on which the TCP or TLS socket resides.
          * This will default to ipc.config.networkHost if not specified
          * @param port the port on which the TCP or TLS socket resides
-         * @param callback 	this is the function to execute when the socket has been created
+         * @param callback     this is the function to execute when the socket has been created
          */
         connectToNet(id: string, host?: string, port?: number, callback?: () => void): void;
         /**
@@ -61,7 +61,7 @@ declare namespace NodeIPC {
          * They have a few additional requirements, and things to know about and so have their own doc.
          * @param id is the string id of the socket being connected to. For TCP & TLS sockets,
          * this id is added to the ipc.of object when the socket is created with a reference to the socket
-         * @param callback 	this is the function to execute when the socket has been created
+         * @param callback     this is the function to execute when the socket has been created
          */
         connectToNet(id: string, callback?: () => void): void;
         /**
@@ -75,7 +75,7 @@ declare namespace NodeIPC {
          * For TCP & TLS sockets, this id is added to the ipc.of object when the socket is created with a reference to the socket
          * @param host is the host on which the TCP or TLS socket resides. This will default to ipc.config.networkHost if not specified
          * @param port the port on which the TCP or TLS socket resides
-         * @param callback 	this is the function to execute when the socket has been created
+         * @param callback     this is the function to execute when the socket has been created
          */
         connectToNet(id: string, hostOrPort: number | string, callback?: () => void): void;
         /**
@@ -178,6 +178,10 @@ declare namespace NodeIPC {
          */
         on(event: "data", callback: (buffer: Buffer) => void): Client;
         emit(event: string, value?: any): Client;
+        /**
+         * Unbind subscribed events
+         */
+        off(event: string, handler: any): Client;
     }
     interface Server extends Client {
         /**
@@ -283,7 +287,7 @@ declare namespace NodeIPC {
          * if set, it represents the maximum number of retries after each disconnect before giving up
          * and completely killing a specific connection
          */
-        maxRetries: boolean;
+        maxRetries: boolean | number;
         /**
          * Default: false
          * Defaults to false meaning clients will continue to retry to connect to servers indefinitely at the retry interval.

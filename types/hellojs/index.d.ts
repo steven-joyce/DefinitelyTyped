@@ -1,8 +1,9 @@
 // Type definitions for hello.js 1.16
-// Project: http://adodson.com/hello.js/
+// Project: https://adodson.com/hello.js
 // Definitions by: Pavel Zika <https://github.com/PavelPZ>
 //                 Mikko Vuorinen <https://github.com/vuorinem>
 //                 Vincent Biret <https://github.com/baywet>
+//                 Batuhan Wilhelm <https://github.com/batuhanw>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // TypeScript Version: 2.3
 
@@ -53,7 +54,15 @@ declare namespace hello {
 
     type HelloJSResponseCallback = (r: any, headers: any) => void;
 
-    type HelloJSTokenResponseType = "token" | "code";
+    type HelloJSTokenResponseType =
+        "code"
+        | "code id_token"
+        | "code id_token token"
+        | "code token"
+        | "id_token"
+        | "id_token token"
+        | "none"
+        | "token";
 
     type HelloJSDisplayType = "popup" | "page" | "none";
 
@@ -101,6 +110,7 @@ declare namespace hello {
     }
 
     interface HelloJSAuthResponse {
+        client_id?: string;
         access_token?: string;
         token_type?: string;
         expires_in?: number;

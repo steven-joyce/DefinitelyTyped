@@ -16,11 +16,11 @@ declare const data: any;
 declare const object: object;
 declare const buf: Buffer;
 let strOrBuf: string | Buffer;
-let buffer: NodeBuffer;
+let buffer: Buffer;
 declare const modeNum: number;
 declare const modeStr: string;
-declare const encoding: string;
-declare const type: string;
+declare const encoding: BufferEncoding;
+declare const symlinkType: "file" | "dir" | "junction";
 declare const flags: string;
 declare const srcpath: string;
 declare const dstpath: string;
@@ -117,8 +117,8 @@ stats = fs.lstatSync(path);
 stats = fs.fstatSync(fd);
 fs.link(srcpath, dstpath, errorCallback);
 fs.linkSync(srcpath, dstpath);
-fs.symlink(srcpath, dstpath, type, errorCallback);
-fs.symlinkSync(srcpath, dstpath, type);
+fs.symlink(srcpath, dstpath, symlinkType, errorCallback);
+fs.symlinkSync(srcpath, dstpath, symlinkType);
 fs.readlink(path, (err: Error, linkString: string) => {
 });
 fs.realpath(path, (err: Error, resolvedPath: string) => {
@@ -148,19 +148,19 @@ fs.futimes(fd, atime, mtime, errorCallback);
 fs.futimesSync(fd, atime, mtime);
 fs.fsync(fd, errorCallback);
 fs.fsyncSync(fd);
-fs.write(fd, buffer, offset, length, position, (err: Error, written: number, buffer: NodeBuffer) => {
+fs.write(fd, buffer, offset, length, position, (err: Error, written: number, buffer: Buffer) => {
 });
 num = fs.writeSync(fd, buffer, offset, length, position);
-fs.read(fd, buffer, offset, length, position, (err: Error, bytesRead: number, buffer: NodeBuffer) => {
+fs.read(fd, buffer, offset, length, position, (err: Error, bytesRead: number, buffer: Buffer) => {
 });
 num = fs.readSync(fd, buffer, offset, length, position);
-fs.readFile(filename, (err: Error, data: NodeBuffer) => {
+fs.readFile(filename, (err: Error, data: Buffer) => {
 });
 fs.readFile(filename, encoding, (err: Error, data: string) => {
 });
 fs.readFile(filename, openOpts, (err: NodeJS.ErrnoException, data: Buffer) => {
 });
-fs.readFile(filename, (err: Error, data: NodeBuffer) => {
+fs.readFile(filename, (err: Error, data: Buffer) => {
 });
 buffer = fs.readFileSync(filename);
 str = fs.readFileSync(filename, encoding);
@@ -182,8 +182,8 @@ fs.appendFileSync(filename, data, writeOpts);
 
 fs.watchFile(filename, watchListener);
 fs.watchFile(filename, {
-	persistent: bool,
-	interval: num
+    persistent: bool,
+    interval: num
 }, watchListener);
 fs.unwatchFile(filename);
 watcher = fs.watch(filename, { persistent: bool }, (event: string, filename: string) => {
@@ -194,15 +194,15 @@ bool = fs.existsSync(path);
 
 readStream = fs.createReadStream(path);
 readStream = fs.createReadStream(path, {
-	flags: str,
-	encoding: str,
-	fd: num,
-	mode: num
+    flags: str,
+    encoding: str as BufferEncoding,
+    fd: num,
+    mode: num
 });
 writeStream = fs.createWriteStream(path);
 writeStream = fs.createWriteStream(path, {
-	flags: str,
-	encoding: str
+    flags: str,
+    encoding: str as BufferEncoding
 });
 
 function isDirectoryCallback(err: Error, isDirectory: boolean) {}
@@ -210,3 +210,6 @@ fs.isDirectory(path, isDirectoryCallback);
 fs.isDirectory(path);
 isDirectory = fs.isDirectorySync(path);
 fs.isDirectoryAsync(path);
+
+fs.mkdtempAsync(str, str);
+fs.mkdtempAsync(str, {encoding: str});

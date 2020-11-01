@@ -1,7 +1,8 @@
-// Type definitions for html-minifier 3.5
-// Project: https://github.com/kangax/html-minifier
+// Type definitions for html-minifier 4.0
+// Project: https://github.com/kangax/html-minifier, https://kangax.github.io/html-minifier
 // Definitions by: Tanguy Krotoff <https://github.com/tkrotoff>
 //                 Riku <https://github.com/rikuayanokozy>
+//                 Piotr Błażejewicz <https://github.com/peterblazejewicz>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
 import * as UglifyJS from 'uglify-js';
@@ -28,6 +29,11 @@ export interface Options {
 
     // Always collapse to 1 space (never remove it entirely). Must be used in conjunction with collapseWhitespace=true
     conservativeCollapse?: boolean;
+    /**
+     * Handle parse errors instead of aborting
+     * @default false
+     */
+    continueOnParseError?: boolean;
 
     // Arrays of regex'es that allow to support custom attribute assign expressions (e.g. '<div flex?="{{mode != cover}}"></div>')
     customAttrAssign?: RegExp[];

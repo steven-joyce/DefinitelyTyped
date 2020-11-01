@@ -1,7 +1,8 @@
-// Type definitions for big.js 4.0
+// Type definitions for big.js 6.0
 // Project: https://github.com/MikeMcl/big.js/
 // Definitions by: Steve Ognibene <https://github.com/nycdotnet>
 //                 Miika Hänninen <https://github.com/googol>
+//                 Roman Nuritdinov (Ky6uk) <https://github.com/Ky6uk>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
 export type BigSource = number | string | Big;
@@ -103,6 +104,12 @@ export interface Big {
     /** Returns a Big number whose value is the absolute value, i.e. the magnitude, of this Big number. */
     abs(): Big;
     /**
+     * Returns a Big number whose value is the value of this Big number plus n - alias for .plus().
+     *
+     * @throws `NaN` if n is invalid.
+     */
+    add(n: BigSource): Big;
+    /**
      * Compare the values.
      *
      * @throws `NaN` if n is invalid.
@@ -163,6 +170,12 @@ export interface Big {
      */
     mod(n: BigSource): Big;
     /**
+     * Returns a Big number whose value is the value of this Big number times n - alias for .times().
+     *
+     * @throws `NaN` if n is invalid.
+     */
+    mul(n: BigSource): Big;
+    /**
      * Returns a Big number whose value is the value of this Big number plus n.
      *
      * @throws `NaN` if n is invalid.
@@ -196,6 +209,12 @@ export interface Big {
      * @throws `NaN` if this Big number is negative.
      */
     sqrt(): Big;
+    /**
+     * Returns a Big number whose value is the value of this Big number minus n - alias for .minus().
+     *
+     * @throws `NaN` if n is invalid.
+     */
+    sub(n: BigSource): Big;
     /**
      * Returns a Big number whose value is the value of this Big number times n.
      *
@@ -257,6 +276,14 @@ export interface Big {
      * the value of Big.E_POS and Big.E_NEG. By default, Big numbers correspond to Javascript's number type in this regard.
      */
     toString(): string;
+    /**
+     * Returns a primitive number representing the value of this Big number.
+     *
+     * If Big.strict is true an error will be thrown if toNumber is called on a Big number which cannot be converted to a primitive number without a loss of precision.
+     *
+     * @since 6.0
+     */
+    toNumber(): number;
     /**
      * Returns a string representing the value of this Big number.
      *

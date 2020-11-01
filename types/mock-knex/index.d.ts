@@ -1,13 +1,29 @@
-// Type definitions for mock-knex 0.3
+// Type definitions for mock-knex 0.4
 // Project: https://github.com/colonyamerican/mock-knex
 // Definitions by: Jesse Zhang <https://github.com/jessezhang91>
+//                 Scott Cooper <https://github.com/scttcper>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.3
+// TypeScript Version: 3.4
 
 /// <reference types="node" />
 
-import * as Knex from "knex";
 import { EventEmitter } from "events";
+
+interface Knex {
+    client: any;
+}
+
+declare namespace Knex {
+    interface Sql {
+        method: string;
+        options: any;
+        bindings: any;
+        sql: string;
+        toNative(): any;
+    }
+}
+
+export {};
 
 /**
  * Attaches mocked client to knex instance
@@ -48,7 +64,15 @@ export interface Tracker extends EventEmitter {
      *
      * @param callback A function that gets executed on 'query' event.
      */
-    on(event: 'query', callback: (query: QueryDetails, step: number) => void): this;
+    on(
+        event: "query",
+        callback: (query: QueryDetails, step: number) => void
+    ): this;
+
+    once(
+        event: "query",
+        callback: (query: QueryDetails, step: number) => void
+    ): this;
 }
 
 /**
@@ -56,6 +80,8 @@ export interface Tracker extends EventEmitter {
  * Object properties signature matches with knex toSQL() output with additional method returns(values).
  */
 export interface QueryDetails extends Knex.Sql {
+    transacting: boolean;
+
     /**
      * Function that needs to be called to mock database query result for knex.
      *
@@ -68,7 +94,7 @@ export interface QueryDetails extends Knex.Sql {
      *
      * @param values An array of mock data to be returned by database. For Bookshelf this is mostly array of objects. Knex could return any type of data.
      */
-    response(values: any[], options?: QueryDetailsResponseOption): void;
+    response(values: any, options?: QueryDetailsResponseOption): void;
 }
 
 export interface QueryDetailsResponseOption {

@@ -1,8 +1,10 @@
-// Type definitions for Windows Image Acquisition 2.0
+// Type definitions for non-npm package Windows Image Acquisition 2.0
 // Project: https://msdn.microsoft.com/en-us/library/windows/desktop/ms630368(v=vs.85).aspx
 // Definitions by: Zev Spitz <https://github.com/zspitz>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // TypeScript Version: 2.6
+
+/// <reference types="activex-interop" />
 
 declare namespace WIA {
     /** String versions of globally unique identifiers (GUIDs) that identify common Device and Item commands. */
@@ -626,7 +628,6 @@ declare namespace WIA {
     }
 
     /** The Items object contains a collection of Item objects. See the Items property on the Device or Item object for details on accessing the Items object. */
-    // tslint:disable-next-line interface-name
     interface Items {
         /** Adds a new Item with the specified Name and Flags. The Flags value is created by using the OR operation with members of the WiaItemFlags enumeration. */
         Add(Name: string, Flags: number): void;
@@ -791,7 +792,6 @@ declare namespace WIA {
 }
 
 interface ActiveXObject {
-    new<K extends keyof ActiveXObjectNameMap = any>(progid: K): ActiveXObjectNameMap[K];
     on(obj: WIA.DeviceManager, event: 'OnEvent', argNames: ['EventID', 'DeviceID', 'ItemID'], handler: (
         this: WIA.DeviceManager, parameter: { readonly EventID: string, readonly DeviceID: string, readonly ItemID: string }) => void): void;
     set<TItem>(obj: WIA.Vector<TItem>, propertyName: 'Item', parameterTypes: [number], newValue: TItem): void;

@@ -1,6 +1,9 @@
-// Type definitions for needle 2.0
+// Type definitions for needle 2.5
 // Project: https://github.com/tomas/needle
-// Definitions by: San Chen <https://github.com/bigsan>, Niklas Mollenhauer <https://github.com/nikeee>, Matanel Sindilevich <https://github.com/sindilevich>
+// Definitions by: San Chen <https://github.com/bigsan>,
+//                 Niklas Mollenhauer <https://github.com/nikeee>,
+//                 Matanel Sindilevich <https://github.com/sindilevich>,
+//                 Bryan Spears <https://github.com/bryanspears>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // TypeScript Version: 2.2
 
@@ -20,7 +23,7 @@ declare namespace core {
 
     type ReadableStream = NodeJS.ReadableStream;
 
-    type NeedleCallback = (error: Error, response: NeedleResponse, body: any) => void;
+    type NeedleCallback = (error: Error | null, response: NeedleResponse, body: any) => void;
 
     interface Cookies {
         [name: string]: any;
@@ -44,6 +47,12 @@ declare namespace core {
          * Alias for open_timeout
          */
         timeout?: RequestOptions['open_timeout'];
+
+        /**
+         * Returns error if no response headers are received in X milisecs,
+         * counting from when the connection is opened. Defaults to `0` (no response timeout).
+         */
+        response_timeout?: number;
 
         /**
          * Returns error if data transfer takes longer than X milisecs,
@@ -100,6 +109,17 @@ declare namespace core {
          * which is no Content-Length header for stream payloads.
          */
         stream_length?: number;
+
+        /**
+         * IP address. Passed to http/https request. Local interface from which the request should be emitted.
+         */
+        localAddress?: string;
+
+        /**
+         * Anonymous function taking request (or redirect location if following redirects) URI as an argument and modifying it given logic.
+         * It has to return a valid URI string for successful request.
+         */
+        uri_modifier?: (uri: string) => string;
 
         // These properties are overwritten by those in the 'headers' field
         /**
@@ -214,6 +234,10 @@ declare namespace core {
          * false by default.
          */
         follow_if_same_protocol?: boolean;
+        /**
+         * Unless true, Needle will not follow redirects that point to same location (as set in the response header) as the original request URL. false by default.
+         */
+        follow_if_same_location?: boolean;
     }
 
     interface KeyValue {
@@ -240,11 +264,12 @@ declare function needle(method: core.NeedleReadonlyHttpVerbs, url: string, optio
 declare function needle(method: core.NeedleHttpVerbs, url: string, data: core.BodyData, options?: core.NeedleOptions): Promise<core.NeedleResponse>;
 
 declare namespace needle {
-    type BodyData = core.BodyData;
-    type NeedleCallback = core.NeedleCallback;
-    type NeedleHttpVerbs = core.NeedleHttpVerbs;
+    export type BodyData = core.BodyData;
+    export type NeedleCallback = core.NeedleCallback;
+    export type NeedleHttpVerbs = core.NeedleHttpVerbs;
     export type NeedleOptions = core.NeedleOptions;
-    type ReadableStream = core.ReadableStream;
+    export type NeedleResponse = core.NeedleResponse;
+    export type ReadableStream = core.ReadableStream;
 
     /**
      * Lets override the defaults for all future requests.

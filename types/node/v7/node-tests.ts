@@ -1,3 +1,15 @@
+// NOTE: Disabled to preserve existing tests file
+// tslint:disable:import-spacing
+// tslint:disable:interface-over-type-literal
+// tslint:disable:no-duplicate-imports
+// tslint:disable:no-duplicate-variable
+// tslint:disable:no-inferrable-types
+// tslint:disable:no-namespace
+// tslint:disable:no-string-throw
+// tslint:disable:object-literal-shorthand
+// tslint:disable:one-line
+// tslint:disable:only-arrow-functions
+// tslint:disable:prefer-const
 import assert = require("assert");
 import * as fs from "fs";
 import * as events from "events";
@@ -28,7 +40,7 @@ import * as v8 from "v8";
 import * as dns from "dns";
 
 // Specifically test buffer module regression.
-import { Buffer as ImportedBuffer, SlowBuffer as ImportedSlowBuffer } from "buffer";
+import { Buffer as ImportedBuffer, SlowBuffer as ImportedSlowBuffer, transcode, TranscodeEncoding } from "buffer";
 
 //////////////////////////////////////////////////////////
 /// Global Tests : https://nodejs.org/api/global.html  ///
@@ -292,8 +304,8 @@ function bufferTests() {
     console.log(Buffer.isEncoding('utf8'));
     console.log(Buffer.byteLength('xyz123'));
     console.log(Buffer.byteLength('xyz123', 'ascii'));
-    var result1 = Buffer.concat([utf8Buffer, base64Buffer]);
-    var result2 = Buffer.concat([utf8Buffer, base64Buffer], 9999999);
+    var result1 = Buffer.concat([utf8Buffer, base64Buffer] as ReadonlyArray<Buffer>);
+    var result2 = Buffer.concat([utf8Buffer, base64Buffer] as ReadonlyArray<Buffer>, 9999999);
 
     // Class Methods: Buffer.swap16(), Buffer.swa32(), Buffer.swap64()
     {
@@ -303,9 +315,19 @@ function bufferTests() {
         buf.swap64();
     }
 
-    // Class Method: Buffer.from(array)
+    // Class Method: Buffer.from(data)
     {
-        const buf: Buffer = Buffer.from([0x62, 0x75, 0x66, 0x66, 0x65, 0x72]);
+        // Array
+        const buf1: Buffer = Buffer.from([0x62, 0x75, 0x66, 0x66, 0x65, 0x72] as ReadonlyArray<any>);
+        // Buffer
+        const buf2: Buffer = Buffer.from(buf1);
+        // String
+        const buf3: Buffer = Buffer.from('this is a tést');
+        // ArrayBuffer
+        const arr: Uint16Array = new Uint16Array(2);
+        arr[0] = 5000;
+        arr[1] = 4000;
+        const buf4: Buffer = Buffer.from(arr.buffer);
     }
 
     // Class Method: Buffer.from(arrayBuffer[, byteOffset[, length]])
@@ -315,10 +337,15 @@ function bufferTests() {
         arr[1] = 4000;
 
         let buf: Buffer;
-        buf = Buffer.from(arr.buffer);
         buf = Buffer.from(arr.buffer, 1);
         buf = Buffer.from(arr.buffer, 0, 1);
     }
+
+    // Class Method: Buffer.from(str[, encoding])
+    {
+        const buf2: Buffer = Buffer.from('7468697320697320612074c3a97374', 'hex');
+    }
+
     // Class Method: Buffer.alloc(size[, fill[, encoding]])
     {
         const buf1: Buffer = Buffer.alloc(5);
@@ -332,18 +359,6 @@ function bufferTests() {
     // Class Method: Buffer.allocUnsafeSlow(size)
     {
         const buf: Buffer = Buffer.allocUnsafeSlow(10);
-    }
-
-    // Class Method: Buffer.from(buffer)
-    {
-        const buf1: Buffer = Buffer.from('buffer');
-        const buf2: Buffer = Buffer.from(buf1);
-    }
-
-    // Class Method: Buffer.from(str[, encoding])
-    {
-        const buf1: Buffer = Buffer.from('this is a tést');
-        const buf2: Buffer = Buffer.from('7468697320697320612074c3a97374', 'hex');
     }
 
     // Test that TS 1.6 works with the 'as Buffer' annotation
@@ -445,6 +460,15 @@ function bufferTests() {
       let buffer = new Buffer('123');
       let octets = new Uint8Array(buffer.buffer);
     }
+
+    // Buffer module, transcode function
+    {
+        transcode(Buffer.from('€'), 'utf8', 'ascii'); // $ExpectType Buffer
+
+        const source: TranscodeEncoding = 'utf8';
+        const target: TranscodeEncoding = 'ascii';
+        transcode(Buffer.from('€'), source, target); // $ExpectType Buffer
+    }
 }
 
 
@@ -473,6 +497,11 @@ namespace url_tests {
     {
         var helloUrl = url.parse('http://example.com/?hello=world', true)
         assert.equal(helloUrl.query.hello, 'world');
+    }
+
+    {
+        const ascii: string = url.domainToASCII('español.com');
+        const unicode: string = url.domainToUnicode('xn--espaol-zwa.com');
     }
 
     {
@@ -512,9 +541,10 @@ namespace url_tests {
         const searchParams = new url.URLSearchParams('abc=123');
 
         assert.equal(searchParams.toString(), 'abc=123');
-        searchParams.forEach((value: string, name: string): void => {
+        searchParams.forEach((value: string, name: string, me: url.URLSearchParams): void => {
             assert.equal(name, 'abc');
             assert.equal(value, '123');
+            assert.equal(me, searchParams);
         });
 
         assert.equal(searchParams.get('abc'), '123');
@@ -551,7 +581,7 @@ namespace url_tests {
     {
         const searchParams = new url.URLSearchParams({
             user: 'abc',
-            query: ['first', 'second']
+            query: ['first', 'second'] as ReadonlyArray<string>
         });
 
         assert.equal(searchParams.toString(), 'user=abc&query=first%2Csecond');
@@ -564,7 +594,7 @@ namespace url_tests {
             ['user', 'abc'],
             ['query', 'first'],
             ['query', 'second']
-        ]);
+        ] as ReadonlyArray<[string, string]>);
         assert.equal(params.toString(), 'user=abc&query=first&query=second');
     }
 }
@@ -1016,14 +1046,14 @@ namespace http_tests {
     }
 
     {
-	var agent: http.Agent = new http.Agent({
-		keepAlive: true,
-		keepAliveMsecs: 10000,
-		maxSockets: Infinity,
-		maxFreeSockets: 256
-	});
+    var agent: http.Agent = new http.Agent({
+        keepAlive: true,
+        keepAliveMsecs: 10000,
+        maxSockets: Infinity,
+        maxFreeSockets: 256
+    });
 
-	var agent: http.Agent = http.globalAgent;
+    var agent: http.Agent = http.globalAgent;
 
         http.request({ agent: false });
         http.request({ agent: agent });
@@ -1047,7 +1077,7 @@ namespace http_tests {
         request.abort();
     }
 
-	// http request options
+    // http request options
     {
         const requestOpts: http.RequestOptions = {
             timeout: 30000
@@ -1093,6 +1123,8 @@ namespace https_tests {
     });
 
     https.request('http://www.example.com/xyz');
+
+    https.globalAgent.options.ca = [];
 }
 
 ////////////////////////////////////////////////////
@@ -1336,19 +1368,7 @@ namespace path_tests {
     // returns
     //        ['foo', 'bar', 'baz']
 
-    console.log(process.env.PATH)
-    // '/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin'
-
-    process.env.PATH.split(path.delimiter)
-    // returns
-    //        ['/usr/bin', '/bin', '/usr/sbin', '/sbin', '/usr/local/bin']
-
-    console.log(process.env.PATH)
-    // 'C:\Windows\system32;C:\Windows;C:\Program Files\nodejs\'
-
-    process.env.PATH.split(path.delimiter)
-    // returns
-    //        ['C:\Windows\system32', 'C:\Windows', 'C:\Program Files\nodejs\']
+    process.env["PATH"]; // $ExpectType string
 
     path.parse('/home/user/dir/file.txt')
     // returns
@@ -2386,6 +2406,12 @@ namespace dns_tests {
         const _err: NodeJS.ErrnoException = err;
         const _addresses: string | dns.LookupAddress[] = addresses;
         const _family: number | undefined = family;
+    });
+
+    dns.lookupService("127.0.0.1", 0, (err, hostname, service) => {
+        const _err: NodeJS.ErrnoException = err;
+        const _hostname: string = hostname;
+        const _service: string = service;
     });
 
     dns.resolve("nodejs.org", (err, addresses) => {

@@ -1,9 +1,5 @@
 import * as mongoose from 'mongoose';
 
-// test compatibility with other libraries
-import * as _ from 'lodash';
-var fs = require('fs');
-
 // dummy variables
 var cb = function () {};
 
@@ -137,6 +133,7 @@ conn1.openSet('mongodb://localhost/test', 'db', {
 conn1.close().catch(function (err) {});
 conn1.collection('name').$format(999);
 conn1.model('myModel', new mongoose.Schema({}), 'myCol').find();
+conn1.deleteModel('myModel');
 interface IStatics {
   staticMethod1: (a: number) => string;
 }
@@ -266,7 +263,7 @@ schema.method('name', cb).method({
 });
 schema.path('a', mongoose.Schema.Types.Buffer).path('a');
 schema.pathType('m1').toLowerCase();
-schema.plugin(function (schema, opts) {
+schema.plugin(function (schema: mongoose.Schema, opts?: any) {
   schema.get('path');
   if (opts) {
     opts.hasOwnProperty('');
@@ -428,7 +425,30 @@ new mongoose.Schema({
   if (options && options['index']) {
     schema.path('lastMod').index(options['index'])
   }
-});
+}, {index: true});
+
+// plugins
+interface PluginOption {
+  modelName: string;
+  timestamp: string;
+}
+
+function logger(modelName: string, timestamp: string) {
+    // call special logger with options
+}
+
+function AwesomeLoggerPlugin(schema: mongoose.Schema, options?: PluginOption) {
+  if (options) {
+      schema.pre('save', function (next: Function) {
+          logger(options.modelName, options.timestamp)
+      })
+  }
+}
+
+new mongoose.Schema({})
+    .plugin<PluginOption>(AwesomeLoggerPlugin, {modelName: 'Executive', timestamp: 'yyyy/MM/dd'})
+
+mongoose.plugin<PluginOption>(AwesomeLoggerPlugin, {modelName: 'Executive', timestamp: 'yyyy/MM/dd'})
 
 export default function(schema: mongoose.Schema) {
   schema.pre('init', function(this: mongoose.Document, next: (err?: Error) => void, data: any): void {
@@ -486,7 +506,10 @@ doc.update(doc, {
 }, cb).cursor();
 doc.validate({}, function (err) {});
 doc.validate().then(null).catch(null);
-doc.validateSync(['path1', 'path2']).stack;
+var documentValidationError = doc.validateSync(['path1', 'path2']);
+if (documentValidationError) {
+    documentValidationError.stack
+}
 /* practical examples */
 var MyModel = mongoose.model('test', new mongoose.Schema({
   name: {
@@ -576,7 +599,7 @@ interface MyEntity extends mongoose.Document {
   sub: mongoose.Types.Array<MySubEntity>
 }
 var myEntity = <MyEntity> {};
-var subDocArray = _.filter(myEntity.sub, function (sd) {
+var subDocArray = myEntity.sub.filter(sd => {
   sd.property1;
   sd.property2.toLowerCase();
   return true;
@@ -743,6 +766,8 @@ query.findOneAndUpdate({name: 'aa'}, {name: 'bb'}, {
 }, cb);
 query.findOneAndUpdate({name: 'aa'}, {name: 'bb'}, cb);
 query.findOneAndUpdate({name: 'aa'}, {name: 'bb'});
+query.findOneAndUpdate({name: 'aa'}, {name: 'bb'}, { });
+query.findOneAndUpdate({name: 'aa'}, {name: 'bb'}, { upsert: true, new: true });
 query.findOneAndUpdate({name: 'bb'}, cb);
 query.findOneAndUpdate({name: 'bb'});
 query.findOneAndUpdate(cb);
@@ -908,6 +933,7 @@ schemaArray.checkRequired('hello').valueOf();
 mongoose.Schema.Types.Array.schemaName.toLowerCase();
 /** inherited properties */
 schemaArray.sparse(true);
+schemaArray.instance;
 
 /*
  * section schema/string.js
@@ -927,6 +953,7 @@ schemastring.uppercase().uppercase();
 mongoose.Schema.Types.String.schemaName.toLowerCase();
 /* inherited properties */
 schemastring.sparse(true);
+schemastring.instance;
 
 /*
  * section schema/documentarray.js
@@ -937,6 +964,7 @@ var documentarray: mongoose.Schema.Types.DocumentArray = new mongoose.Schema.Typ
 mongoose.Schema.Types.DocumentArray.schemaName.toLowerCase();
 /* inherited properties */
 documentarray.sparse(true);
+documentarray.instance;
 
 /*
  * section schema/number.js
@@ -950,6 +978,7 @@ schemanumber.min(999, 'error').min(999);
 mongoose.Schema.Types.Number.schemaName.toLowerCase();
 /* inherited properties */
 schemanumber.sparse(true);
+schemanumber.instance;
 
 /*
  * section schema/date.js
@@ -964,6 +993,7 @@ schemadate.min(new Date(), 'error').min(new Date(''));
 mongoose.Schema.Types.Date.schemaName.toLowerCase();
 /* inherited properties */
 schemadate.sparse(true);
+schemadate.instance;
 
 /*
  * section schema/buffer.js
@@ -975,6 +1005,7 @@ schemabuffer.checkRequired(999, MongoDocument).valueOf();
 mongoose.Schema.Types.Buffer.schemaName.toLowerCase();
 /* inherited properties */
 schemabuffer.sparse(true);
+schemabuffer.instance;
 
 /*
  * section schema/boolean.js
@@ -986,6 +1017,7 @@ schemaboolean.checkRequired(99).valueOf();
 mongoose.Schema.Types.Boolean.schemaName.toLowerCase();
 /* inherited properties */
 schemaboolean.sparse(true);
+schemaboolean.instance;
 
 /*
  * section schema/objectid.js
@@ -998,6 +1030,7 @@ schemaobjectid.checkRequired(99, MongoDocument).valueOf();
 mongoose.Schema.Types.ObjectId.schemaName.toLowerCase();
 /* inherited properties */
 schemaobjectid.sparse(true);
+schemaobjectid.instance;
 
 /*
  * section schema/mixed.js
@@ -1008,6 +1041,7 @@ var schemamixed: mongoose.Schema.Types.Mixed = new mongoose.Schema.Types.Mixed('
 mongoose.Schema.Types.Mixed.schemaName.toLowerCase();
 /* inherited properties */
 schemamixed.sparse(true);
+schemamixed.instance;
 
 /*
  * section schema/embedded.js
@@ -1017,6 +1051,7 @@ var schemaembedded: mongoose.Schema.Types.Embedded =
   new mongoose.Schema.Types.Embedded(new mongoose.Schema(), '99');
 /* inherited properties */
 schemaembedded.sparse(true);
+schemaembedded.instance;
 
 /*
  * section aggregate.js
@@ -1131,6 +1166,13 @@ schematype.unique(true).unique(true);
 schematype.validate(/re/)
   .validate({}, 'error')
   .validate(cb, 'try', 'tri');
+schematype.defaultValue;
+schematype.instance;
+schematype.path;
+schematype.getters;
+schematype.setters;
+schematype.validators;
+schematype.options;
 
 /*
  * section promise.js
@@ -1371,6 +1413,7 @@ MongoModel.findByIdAndRemove(999);
 MongoModel.findByIdAndRemove();
 MongoModel.findByIdAndUpdate(999, {}, {}, cb);
 MongoModel.findByIdAndUpdate(999, {}, {});
+MongoModel.findByIdAndUpdate(999, {}, { new: true, upsert: true }, cb);
 MongoModel.findByIdAndUpdate(999, {}, cb);
 MongoModel.findByIdAndUpdate(999, {});
 MongoModel.findByIdAndUpdate();
@@ -1399,6 +1442,7 @@ MongoModel.findOneAndRemove({});
 MongoModel.findOneAndRemove();
 MongoModel.findOneAndUpdate({}, {}, {}, cb);
 MongoModel.findOneAndUpdate({}, {}, {});
+MongoModel.findOneAndUpdate({}, {}, { upsert: true, new: true });
 MongoModel.findOneAndUpdate({}, {}, cb);
 MongoModel.findOneAndUpdate({}, {});
 MongoModel.findOneAndUpdate();
@@ -1467,7 +1511,7 @@ MongoModel.populate(users, { path: 'weapon' }, function (err, users) {
 MongoModel.remove({ title: 'baby born from alien father' }, cb);
 MongoModel.remove({_id: '999'}).exec().then(cb).catch(cb);
 MongoModel.update({ age: { $gt: 18 } }, { oldEnough: true }, cb);
-MongoModel.update({ name: 'Tobi' }, { ferret: true }, { multi: true }, cb);
+MongoModel.update({ name: 'Tobi' }, { ferret: true }, { multi: true, arrayFilters: [{ element: { $gte: 100 } }] }, cb);
 MongoModel.where('age').gte(21).lte(65).exec(cb);
 MongoModel.where('age').gte(21).lte(65).where('name', /^b/i);
 new (mongoModel.base.model(''))();

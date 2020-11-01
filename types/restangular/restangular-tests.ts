@@ -27,6 +27,16 @@ myApp.config((RestangularProvider: restangular.IProvider) => {
       return elem;
   });
 
+  RestangularProvider.extendModel('accounts', function(model: any) {
+    model.prettifyAmount = function() {};
+    return model;
+  });
+
+  RestangularProvider.extendCollection('accounts', function(collection: any) {
+    collection.totalAmount = function() {};
+    return collection;
+  });
+
   RestangularProvider.setRestangularFields({
     id: "_id",
     route: "restangularRoute",
@@ -51,10 +61,10 @@ myApp.config((RestangularProvider: restangular.IProvider) => {
 
 
 interface MyAppScope extends angular.IScope {
-	accounts: string[];
+    accounts: string[];
   allAccounts: any[];
   account: any;
-	buildings: restangular.ICollectionPromise<any>;
+    buildings: restangular.ICollectionPromise<any>;
   loggedInPlaces: restangular.ICollectionPromise<any>;
   userFromServer: restangular.IPromise<any>;
 }

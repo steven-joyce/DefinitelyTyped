@@ -1,17 +1,20 @@
-// Type definitions for minio 4.0
+// Type definitions for minio 7.0
 // Project: https://github.com/minio/minio-js#readme
 // Definitions by: Barin Britva <https://github.com/barinbritva>
+//                 Lubomir Kaplan <https://github.com/castorw>
+//                 Panagiotis Kapros <https://github.com/loremaps>
+//                 Ben Watkins <https://github.com/OutdatedVersion>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
 /// <reference types="node" />
 
 // Import from dependencies
-import { Stream } from 'stream';
-import EventEmitter = NodeJS.EventEmitter;
+import { Readable as ReadableStream } from 'stream';
+import { EventEmitter } from 'events';
+import { AgentOptions } from 'https';
 
 // Exports only from typings
-export type Region = 'us-east-1'|'us-west-1'|'us-west-2'|'eu-west-1'|'eu-central-1'|'ap-southeast-1'|'ap-northeast-1'|'ap-southeast-2'|'sa-east-1'|'cn-north-1';
-export type PolicyValue = 'none'|'readonly'|'writeonly'|'readwrite';
+export type Region = 'us-east-1'|'us-west-1'|'us-west-2'|'eu-west-1'|'eu-central-1'|'ap-southeast-1'|'ap-northeast-1'|'ap-southeast-2'|'sa-east-1'|'cn-north-1'|string;
 export type NoResultCallback = (error: Error|null) => void;
 export type ResultCallback<T> = (error: Error|null, result: T) => void;
 
@@ -19,9 +22,12 @@ export interface ClientOptions {
     endPoint: string;
     accessKey: string;
     secretKey: string;
-    secure?: boolean;
+    useSSL?: boolean;
     port?: number;
     region?: Region;
+    transport?: any;
+    sessionToken?: string;
+    partSize?: number;
 }
 
 export interface BucketItemFromList {
@@ -44,10 +50,9 @@ export interface BucketItem {
 
 export interface BucketItemStat {
     size: number;
-    contentType: string;
     etag: string;
-    // In documentation in this case string. Is it doc error?
-    lastModified: Date|string;
+    lastModified: Date;
+    metaData: ItemBucketMetadata;
 }
 
 export interface IncompleteUploadedBucketItem {
@@ -56,8 +61,11 @@ export interface IncompleteUploadedBucketItem {
     size: number;
 }
 
-export interface BucketStream<T> extends Stream {
+export interface BucketStream<T> extends ReadableStream {
     on(event: 'data', listener: (item: T) => void): this;
+    on(event: 'end' | 'pause' | 'readable' | 'resume' | 'close', listener: () => void): this;
+    on(event: "error", listener: (err: Error) => void): this;
+    on(event: string | symbol, listener: (...args: any[]) => void): this;
 }
 
 export interface PostPolicyResult {
@@ -65,6 +73,10 @@ export interface PostPolicyResult {
     formData: {
         [key: string]: any;
     };
+}
+
+export interface ItemBucketMetadata {
+    [key: string]: any;
 }
 
 // No need to export this. But without it - linter error.
@@ -80,44 +92,43 @@ export class Client {
     constructor(options: ClientOptions);
 
     // Bucket operations
-    makeBucket(bucketName: string, callback: NoResultCallback): void;
     makeBucket(bucketName: string, region: Region, callback: NoResultCallback): void;
-    makeBucket(bucketName: string, region?: Region): Promise<void>;
+    makeBucket(bucketName: string, region: Region): Promise<void>;
 
     listBuckets(callback: ResultCallback<BucketItemFromList[]>): void;
-    listBuckets(): Promise<BucketItemFromList>;
+    listBuckets(): Promise<BucketItemFromList[]>;
 
-    // Doc contains error - no boolean value in result
-    bucketExists(bucketName: string, callback: NoResultCallback): void;
-    bucketExists(bucketName: string): Promise<void>;
+    bucketExists(bucketName: string, callback: ResultCallback<boolean>): void;
+    bucketExists(bucketName: string): Promise<boolean>;
 
     removeBucket(bucketName: string, callback: NoResultCallback): void;
     removeBucket(bucketName: string): Promise<void>;
 
     listObjects(bucketName: string, prefix?: string, recursive?: boolean): BucketStream<BucketItem>;
 
-    listObjectsV2(bucketName: string, prefix?: string, recursive?: boolean): BucketStream<BucketItem>;
+    listObjectsV2(bucketName: string, prefix?: string, recursive?: boolean, startAfter?: string): BucketStream<BucketItem>;
 
     listIncompleteUploads(bucketName: string, prefix?: string, recursive?: boolean): BucketStream<IncompleteUploadedBucketItem>;
 
     // Object operations
-    getObject(bucketName: string, objectName: string, callback: ResultCallback<Stream>): void;
-    getObject(bucketName: string, objectName: string): Promise<Stream>;
+    getObject(bucketName: string, objectName: string, callback: ResultCallback<ReadableStream>): void;
+    getObject(bucketName: string, objectName: string): Promise<ReadableStream>;
 
-    getPartialObject(bucketName: string, objectName: string, offset: number, callback: ResultCallback<Stream>): void;
-    getPartialObject(bucketName: string, objectName: string, offset: number, length: number, callback: ResultCallback<Stream>): void;
-    getPartialObject(bucketName: string, objectName: string, offset: number, length?: number): Promise<Stream>;
+    getPartialObject(bucketName: string, objectName: string, offset: number, callback: ResultCallback<ReadableStream>): void;
+    getPartialObject(bucketName: string, objectName: string, offset: number, length: number, callback: ResultCallback<ReadableStream>): void;
+    getPartialObject(bucketName: string, objectName: string, offset: number, length?: number): Promise<ReadableStream>;
 
     fGetObject(bucketName: string, objectName: string, filePath: string, callback: NoResultCallback): void;
     fGetObject(bucketName: string, objectName: string, filePath: string): Promise<void>;
 
-    putObject(bucketName: string, objectName: string, stream: Stream|Buffer|string, callback: ResultCallback<string>): void;
-    putObject(bucketName: string, objectName: string, stream: Stream|Buffer|string, size: number, callback: ResultCallback<string>): void;
-    putObject(bucketName: string, objectName: string, stream: Stream|Buffer|string, size: number, cotentType: string, callback: ResultCallback<string>): void;
-    putObject(bucketName: string, objectName: string, stream: Stream|Buffer|string, size?: number, cotentType?: string): Promise<string>;
+    putObject(bucketName: string, objectName: string, stream: ReadableStream|Buffer|string, callback: ResultCallback<string>): void;
+    putObject(bucketName: string, objectName: string, stream: ReadableStream|Buffer|string, size: number, callback: ResultCallback<string>): void;
+    putObject(bucketName: string, objectName: string, stream: ReadableStream|Buffer|string, size: number, metaData: ItemBucketMetadata, callback: ResultCallback<string>): void;
+    putObject(bucketName: string, objectName: string, stream: ReadableStream|Buffer|string, size?: number, metaData?: ItemBucketMetadata): Promise<string>;
+    putObject(bucketName: string, objectName: string, stream: ReadableStream|Buffer|string, metaData?: ItemBucketMetadata): Promise<string>;
 
-    fPutObject(bucketName: string, objectName: string, filePath: string, contentType: string, callback: ResultCallback<string>): void;
-    fPutObject(bucketName: string, objectName: string, filePath: string, contentType: string): Promise<string>;
+    fPutObject(bucketName: string, objectName: string, filePath: string, metaData: ItemBucketMetadata, callback: ResultCallback<string>): void;
+    fPutObject(bucketName: string, objectName: string, filePath: string, metaData: ItemBucketMetadata): Promise<string>;
 
     copyObject(bucketName: string, objectName: string, sourceObject: string, conditions: CopyConditions, callback: ResultCallback<BucketItemCopy>): void;
     copyObject(bucketName: string, objectName: string, sourceObject: string, conditions: CopyConditions): Promise<BucketItemCopy>;
@@ -128,6 +139,9 @@ export class Client {
     removeObject(bucketName: string, objectName: string, callback: NoResultCallback): void;
     removeObject(bucketName: string, objectName: string): Promise<void>;
 
+    removeObjects(bucketName: string, objectsList: string[], callback: NoResultCallback): void;
+    removeObjects(bucketName: string, objectsList: string[]): Promise<void>;
+
     removeIncompleteUpload(bucketName: string, objectName: string, callback: NoResultCallback): void;
     removeIncompleteUpload(bucketName: string, objectName: string): Promise<void>;
 
@@ -135,11 +149,14 @@ export class Client {
     presignedUrl(httpMethod: string, bucketName: string, objectName: string, callback: ResultCallback<string>): void;
     presignedUrl(httpMethod: string, bucketName: string, objectName: string, expiry: number, callback: ResultCallback<string>): void;
     presignedUrl(httpMethod: string, bucketName: string, objectName: string, expiry: number, reqParams: { [key: string]: any; }, callback: ResultCallback<string>): void;
-    presignedUrl(httpMethod: string, bucketName: string, objectName: string, expiry?: number, reqParams?: { [key: string]: any; }): Promise<string>;
+    presignedUrl(httpMethod: string, bucketName: string, objectName: string, expiry: number, reqParams: { [key: string]: any; }, requestDate: Date, callback: ResultCallback<string>): void;
+    presignedUrl(httpMethod: string, bucketName: string, objectName: string, expiry?: number, reqParams?: { [key: string]: any; }, requestDate?: Date): Promise<string>;
 
     presignedGetObject(bucketName: string, objectName: string, callback: ResultCallback<string>): void;
     presignedGetObject(bucketName: string, objectName: string, expiry: number, callback: ResultCallback<string>): void;
-    presignedGetObject(bucketName: string, objectName: string, expiry?: number): Promise<string>;
+    presignedGetObject(bucketName: string, objectName: string, expiry: number, respHeaders: { [key: string]: any; }, callback: ResultCallback<string>): void;
+    presignedGetObject(bucketName: string, objectName: string, expiry: number, respHeaders: { [key: string]: any; }, requestDate: Date, callback: ResultCallback<string>): void;
+    presignedGetObject(bucketName: string, objectName: string, expiry?: number, respHeaders?: { [key: string]: any; }, requestDate?: Date): Promise<string>;
 
     presignedPutObject(bucketName: string, objectName: string, callback: ResultCallback<string>): void;
     presignedPutObject(bucketName: string, objectName: string, expiry: number, callback: ResultCallback<string>): void;
@@ -161,14 +178,15 @@ export class Client {
     // todo #low Specify events
     listenBucketNotification(bucketName: string, prefix: string, suffix: string, events: string[]): EventEmitter;
 
-    getBucketPolicy(bucketName: string, objectPrefix: string, callback: ResultCallback<PolicyValue>): void;
-    getBucketPolicy(bucketName: string, objectPrefix: string): Promise<PolicyValue>;
+    getBucketPolicy(bucketName: string, callback: ResultCallback<string>): void;
+    getBucketPolicy(bucketName: string): Promise<string>;
 
-    setBucketPolicy(bucketName: string, objectPrefix: string, bucketPolice: PolicyValue, callback: NoResultCallback): void;
-    setBucketPolicy(bucketName: string, objectPrefix: string, bucketPolice: PolicyValue): Promise<void>;
+    setBucketPolicy(bucketName: string, bucketPolicy: string, callback: NoResultCallback): void;
+    setBucketPolicy(bucketName: string, bucketPolicy: string): Promise<void>;
 
     // Other
     newPostPolicy(): PostPolicy;
+    setRequestOptions(otpions: AgentOptions): void;
 }
 
 export namespace Policy {

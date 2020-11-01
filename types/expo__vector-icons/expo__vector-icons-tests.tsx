@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { View, Text, TabBarIOS } from 'react-native';
-import { createIconSet, MaterialIcons, FontAwesome, Ionicons } from 'expo__vector-icons';
+import { createIconSet, MaterialIcons, FontAwesome, AntDesign } from 'expo__vector-icons';
 
 const glyphMap = {
   custom: 58918
@@ -13,6 +13,7 @@ const CustomIconTabBarItem     = CustomIcon.TabBarItem;
 const CustomIconTabBarItemIOS  = CustomIcon.TabBarItemIOS;
 const CustomIconToolbarAndroid = CustomIcon.ToolbarAndroid;
 const CustomIcongetImageSource = CustomIcon.getImageSource;
+const CustomIcongetImageSourceSync = CustomIcon.getImageSourceSync;
 
 class Example extends React.Component {
   handleButton() {
@@ -41,18 +42,14 @@ class Example extends React.Component {
 }
 
 class TabTest extends React.Component<{}, { selectedTab: string }> {
-  constructor() {
-    super({});
-
-    this.state = {
-      selectedTab: 'tab1'
-    };
-  }
+  state = {
+    selectedTab: 'tab1'
+  };
 
   render() {
     return (
       <TabBarIOS barTintColor="white">
-        <Ionicons.TabBarItemIOS
+        <AntDesign.TabBarItemIOS
           title="Tab1"
           iconName="ios-keypad-outline"
           selectedIconName="ios-keypad"
@@ -62,9 +59,9 @@ class TabTest extends React.Component<{}, { selectedTab: string }> {
           onPress={() => this.setState({ selectedTab: 'tab1' })}
         >
           <View />
-        </Ionicons.TabBarItemIOS>
+        </AntDesign.TabBarItemIOS>
 
-        <Ionicons.TabBarItemIOS
+        <AntDesign.TabBarItemIOS
           title="Tab2"
           iconName="ios-bookmark-outline"
           selectedIconName="ios-bookmark"
@@ -74,7 +71,7 @@ class TabTest extends React.Component<{}, { selectedTab: string }> {
           onPress={() => this.setState({ selectedTab: 'tab2' })}
         >
           <View />
-        </Ionicons.TabBarItemIOS>
+        </AntDesign.TabBarItemIOS>
       </TabBarIOS>
     );
   }

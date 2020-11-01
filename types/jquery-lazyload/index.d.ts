@@ -1,5 +1,5 @@
 // Type definitions for JQuery Lazy Load 1.9
-// Project: https://github.com/tuupola/jquery_lazyload
+// Project: https://github.com/tuupola/jquery_lazyload, http://www.appelsiini.net/projects/lazyload
 // Definitions by: Anderson Friaça <https://github.com/AndersonFriaca>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // TypeScript Version: 2.3
@@ -15,7 +15,7 @@ declare namespace JQueryLazyLoad {
         container?: JQuery;
         data_attribute?: string;
         skip_invisible?: boolean;
-        appear?: null;
+        appear?: ((elementsLeft: number, options: Options) => void) | null;
         load?: (elementsLeft?: number, options?: Options) => void;
         placeholder?: string;
     }

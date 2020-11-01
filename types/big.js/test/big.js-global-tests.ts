@@ -86,6 +86,7 @@ function minusTests() {
     0.3 - 0.1; // 0.19999999999999998
     const x = new Big(0.3);
     x.minus(0.1); // '0.2'
+    x.sub(0.1); // '0.2'
 }
 
 function modTests() {
@@ -99,6 +100,7 @@ function plusTests() {
     const x = new Big(0.1);
     const y = x.plus(0.2); // '0.3'
     Big(0.7).plus(x).plus(y); // '1'
+    Big(0.7).add(x).add(y); // '1'
 }
 
 function powTests() {
@@ -138,6 +140,7 @@ function timesTests() {
     const x = new Big(0.6);
     const y = x.times(3); // '1.8'
     Big('7e+500').times(y); // '1.26e+501'
+    Big('7e+500').mul(y); // '1.26e+501'
 }
 
 function toExponentialTests() {
@@ -179,6 +182,13 @@ function toStringTests() {
     x.toString(); // '999000000000000000000'
     const y = new Big('1E21');
     x.toString(); // '1e+21'
+}
+
+function toNumberTests() {
+    const x = new Big('123.45');
+    x.toNumber(); // 123.45
+    const y = new Big('1.0000000000000000001');
+    y.toNumber(); // 1
 }
 
 function valueOfTests() {

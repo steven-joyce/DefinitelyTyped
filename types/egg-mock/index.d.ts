@@ -2,11 +2,11 @@
 // Project: https://github.com/eggjs/egg-mock
 // Definitions by: Eward Song <https://github.com/sheperdwind>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.3
+// TypeScript Version: 2.8
 
 import { Application, Context } from 'egg';
 
-interface MockApplication extends Application { // tslint:disble-line
+interface MockApplication extends Application {
   ready(): Promise<void>;
   close(): Promise<void>;
   callback(): any;

@@ -6,6 +6,15 @@
  */
 
 declare var $routeProvider: ng.route.IRouteProvider;
+if (!$routeProvider.eagerInstantiationEnabled()) {
+    throw new Error("The default of $routeProvider.eagerInstantiationEnabled should be true.");
+}
+
+$routeProvider.eagerInstantiationEnabled(false);
+if ($routeProvider.eagerInstantiationEnabled()) {
+    throw new Error("$routeProvider.eagerInstantiationEnabled is expected to be false.");
+}
+
 $routeProvider
     .when('/projects/:projectId/dashboard', {
         controller: 'I am a string',
@@ -39,8 +48,24 @@ $routeProvider
             return "I return a string"
         }
     })
+    .when('/projects/:projectId/dashboard6', {
+        resolve: {
+            foo: () => 'foo',
+            bar: () => 'bar',
+        },
+        resolveAs: 'baz',
+        resolveRedirectTo: [
+            '$http',
+            ($http: ng.IHttpService) => $http.get('/is-admin').then(() => '/admin/lounge', () => undefined),
+        ],
+    })
+    .when('/projects/:projectId/dashboard7', {
+        reloadOnUrl: false,
+        resolveRedirectTo: () => (Math.random() < 0.5) ? '/some/route' : undefined,
+    })
     .otherwise({ redirectTo: '/' })
-    .otherwise({ redirectTo: ($routeParams?: ng.route.IRouteParamsService, $locationPath?: string, $locationSearch?: any) => "" });
+    .otherwise({ redirectTo: ($routeParams?: ng.route.IRouteParamsService, $locationPath?: string, $locationSearch?: any) => "" })
+    .otherwise("/");
 
 
 var current: ng.route.ICurrentRoute;

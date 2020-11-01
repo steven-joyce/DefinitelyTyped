@@ -271,6 +271,9 @@ declare namespace gapi.client.calendar {
     static insert(parameters: EventsInsertParameters): HttpRequest<Event>;
     static update(parameters: EventsUpdateParameters): HttpRequest<Event>;
     static get(parameters: EventsGetParameters): HttpRequest<Event>;
+
+    // delete the existing event from calendar
+    static delete(parameters: EventsDeleteParameters): HttpRequest<Event>;
   }
 
   interface EventsGetParameters {
@@ -304,6 +307,15 @@ declare namespace gapi.client.calendar {
 
     // Event resource
     resource: EventInput;
+  }
+
+  // calendarId: 'primary' or the calendar from which the event to be deleted
+  // eventId: the event that need to be deleted from calendar (Event.id from the list/insert response)
+  interface EventsDeleteParameters {
+    calendarId: string;
+    eventId: string;
+    
+    sendNotifications?: boolean;
   }
 
   interface EventInput {
@@ -576,7 +588,7 @@ declare namespace gapi.client.calendar {
       timeZone?: string;
     };
 
-    // 	Whether the end time is actually unspecified. An end time is still provided for compatibility reasons, even if this attribute is set to True.
+    //     Whether the end time is actually unspecified. An end time is still provided for compatibility reasons, even if this attribute is set to True.
     // The default is False.
     endTimeUnspecified?: boolean;
 
