@@ -1,4 +1,4 @@
-// Type definitions for non-npm package Google Publisher Tag 2020082701
+// Type definitions for non-npm package Google Publisher Tag 2020082701.0
 // Project: https://developers.google.com/doubleclick-gpt/reference
 // Definitions by: John Wright <https://github.com/johngeorgewright>
 //                 Steven Joyce <https://github.com/steven-joyce>

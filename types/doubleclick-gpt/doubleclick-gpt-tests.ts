@@ -434,8 +434,8 @@ slot.setTargeting("interests", ["sports", "music", "movies"]);
 
 // Set custom targeting parameters for this slot, from a key:value map in a JSON object.
 slot.updateTargetingFromMap({
-    'color': 'red',
-    'interests': ['sports', 'music', 'movies']
+    color: 'red',
+    interests: ['sports', 'music', 'movies']
 });
 
 // googletag.display accepts a div element as well as a div ID.
