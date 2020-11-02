@@ -175,12 +175,6 @@ googletag.defineSlot("/1234567/sports", [160, 600], "div-1").
 googletag.defineSlot("/1234567/news", [160, 600], "div-2").
     addService(googletag.pubads());
 
-// Latitude, longitude:
-googletag.pubads().setLocation(34, -45.12);
-
-// Latitude, longitude, and precision in millimeters:
-googletag.pubads().setLocation(34, -45.12, 10000);
-
 // Postal code:
 googletag.pubads().setLocation("10001,US");
 

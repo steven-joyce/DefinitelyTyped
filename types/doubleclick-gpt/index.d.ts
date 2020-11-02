@@ -161,7 +161,7 @@ declare namespace googletag {
         setCentering(centerAds: boolean): void;
         setCookieOptions(cookieOptions: number): PubAdsService;
         setForceSafeFrame(forceSafeFrame: boolean): PubAdsService;
-        setLocation(latitudeOrAddress: string | number, opt_longitude?: number, opt_radius?: number): PubAdsService;
+        setLocation(address: string): PubAdsService;
         setPrivacySettings(settings: { restrictDataProcessing: boolean }): Slot;
         setPublisherProvidedId(ppid: string): PubAdsService;
         setRequestNonPersonalizedAds(nonPersonalizedAds: 0 | 1): PubAdsService;
