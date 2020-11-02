@@ -1,4 +1,4 @@
-// Type definitions for non-npm package Google Publisher Tag 2019041801.0
+// Type definitions for non-npm package Google Publisher Tag 2020082701
 // Project: https://developers.google.com/doubleclick-gpt/reference
 // Definitions by: John Wright <https://github.com/johngeorgewright>
 //                 Steven Joyce <https://github.com/steven-joyce>
@@ -119,6 +119,7 @@ declare namespace googletag {
         setForceSafeFrame(forceSafeFrame: boolean): Slot;
         setSafeFrameConfig(config: SafeFrameConfig): Slot;
         setTargeting(key: string, value: string | string[]): Slot;
+        updateTargetingFromMap(map: { [key: string]: string | string[] }): Slot;
     }
 
     interface PassbackSlot {
@@ -139,7 +140,9 @@ declare namespace googletag {
         clearTagForChildDirectedTreatment(): PubAdsService;
         clearTargeting(opt_key?: string): PubAdsService;
         collapseEmptyDivs(opt_collapseBeforeAdFetch?: boolean): boolean;
+        /** @deprecated This function behaves synchronously and may be blocked by certain browsers. */
         defineOutOfPagePassback(adUnitPath: string): PassbackSlot;
+        /** @deprecated This function behaves synchronously and may be blocked by certain browsers. */
         definePassback(adUnitPath: string, size: GeneralSize): PassbackSlot;
         disableInitialLoad(): void;
         display(adUnitPath: string, size: GeneralSize, opt_div?: string | Element, opt_clickUrl?: string): Slot;
@@ -159,6 +162,7 @@ declare namespace googletag {
         setCookieOptions(cookieOptions: number): PubAdsService;
         setForceSafeFrame(forceSafeFrame: boolean): PubAdsService;
         setLocation(latitudeOrAddress: string | number, opt_longitude?: number, opt_radius?: number): PubAdsService;
+        setPrivacySettings(settings: { restrictDataProcessing: boolean }): Slot;
         setPublisherProvidedId(ppid: string): PubAdsService;
         setRequestNonPersonalizedAds(nonPersonalizedAds: 0 | 1): PubAdsService;
         setSafeFrameConfig(config: SafeFrameConfig): PubAdsService;
@@ -167,7 +171,6 @@ declare namespace googletag {
         setTargeting(key: string, value: string | string[]): PubAdsService;
         setVideoContent(videoContentId: string, videoCmsId: string): void;
         updateCorrelator(): PubAdsService;
-        setPrivacySettings(settings: { restrictDataProcessing: boolean }): Slot;
     }
 
     interface SizeMappingBuilder {

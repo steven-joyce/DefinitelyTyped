@@ -55,34 +55,6 @@ googletag.enableServices();
 let content = "<a href=\"www.mydestinationsite.com\"><img src=\"www.mysite.com/img.png\"></img></a>";
 googletag.content().setContent(slot, content);
 
-googletag.pubads().definePassback("/1234567/sports", [468, 60]).display();
-
-googletag.pubads().definePassback("/1234567/sports", [468, 60])
-        .setClickUrl("%%CLICK_URL_UNESC%%")
-        .display();
-
-googletag.pubads().definePassback("/1234567/sports", [468, 60])
-        .setForceSafeFrame(true)
-        .display();
-
-googletag.pubads().definePassback("/1234567/sports", [468, 60])
-        .setTagForChildDirectedTreatment(1)
-        .display();
-
-googletag.pubads().definePassback('/1234567/sports', [468, 60])
-        .setTagForUnderAgeOfConsent(1)
-        .display();
-
-googletag.pubads().definePassback("/1234567/sports", [468, 60]).
-        setTargeting("color", "red").
-        setTargeting("sport", ["rugby", "rowing"]).
-            display();
-
-googletag.pubads().definePassback("/1234567/sports", [160, 600]).
-    updateTargetingFromMap({color: "red",
-                            interests: ["sports", "music", "movies"]}).
-            display();
-
 googletag.pubads().enableLazyLoad();
 googletag.pubads().enableLazyLoad({
     fetchMarginPercent: 500,
@@ -135,10 +107,6 @@ googletag.pubads().clearTargeting("interests");
 
 googletag.pubads().clearTargeting();
 // All targeting has been cleared.
-
-googletag.pubads().defineOutOfPagePassback("/1234567/sports").display();
-
-googletag.pubads().definePassback("/1234567/sports", [468, 60]).display();
 
 googletag.pubads().display("/1234567/sports", [728, 90], "div-1");
 
@@ -464,6 +432,12 @@ slot.setTargeting("allow_expandable", "true");
 // Example with multiple values for a key inside in an array.
 slot.setTargeting("interests", ["sports", "music", "movies"]);
 
+// Set custom targeting parameters for this slot, from a key:value map in a JSON object.
+slot.updateTargetingFromMap({
+    'color': 'red',
+    'interests': ['sports', 'music', 'movies']
+});
+
 // googletag.display accepts a div element as well as a div ID.
 googletag.display(new HTMLElement());
 
@@ -480,7 +454,7 @@ googletag.pubads().display("/1234567/science/physics", [[300, 250], ["fluid"]], 
 // Request non-personalized ads
 googletag.pubads().setRequestNonPersonalizedAds(1);
 
-// Set Privact Settings
+// Set Privacy Settings
 googletag.pubads().setPrivacySettings({
     restrictDataProcessing: true,
 });
